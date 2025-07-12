@@ -95,10 +95,21 @@ function App() {
 
   const handleMarkNotificationRead = async (id: string) => {
     try {
+      console.log('Marking notification as read in App:', id);
       await notificationsAPI.markAsRead(id);
+      console.log('Successfully marked notification as read');
+      
+      // Update local state immediately for better UX
       setNotifications(prev => 
         prev.map(n => n.id === id ? { ...n, read: true } : n)
       );
+      
+      // Reload notifications from server to ensure consistency
+      if (currentUser) {
+        setTimeout(() => {
+          loadNotifications();
+        }, 100);
+      }
     } catch (error) {
       console.error('Failed to mark notification as read:', error);
     }

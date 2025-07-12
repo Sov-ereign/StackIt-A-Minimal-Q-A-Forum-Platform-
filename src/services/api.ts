@@ -168,9 +168,12 @@ export const notificationsAPI = {
 
   // Mark notification as read
   markAsRead: async (id: string) => {
-    return apiRequest(`/notifications/${id}/read`, {
+    console.log('API: Marking notification as read:', id);
+    const result = await apiRequest(`/notifications/${id}/read`, {
       method: 'PUT',
     });
+    console.log('API: Notification marked as read:', result);
+    return result;
   },
 };
 
