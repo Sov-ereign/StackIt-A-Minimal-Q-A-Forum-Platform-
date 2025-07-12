@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, Question, Answer, Tag, Notification, Comment } from './types';
 import { tags, notifications as initialNotifications, comments as initialComments } from './data/mockData';
-import { authAPI, questionsAPI, answersAPI, votesAPI, reportsAPI, notificationsAPI } from './services/api';
+import { authAPI, questionsAPI, answersAPI, votesAPI, reportsAPI, notificationsAPI, commentsAPI } from './services/api';
 import Header from './components/Header';
 import QuestionList from './components/QuestionList';
 import QuestionDetail from './components/QuestionDetail';
@@ -176,6 +176,11 @@ function App() {
       await answersAPI.create(selectedQuestionId, content);
       await loadAnswers(selectedQuestionId);
       await loadQuestions(); // Update answer count
+      
+      // Reload notifications to show the new answer notification
+      if (currentUser) {
+        loadNotifications();
+      }
     } catch (error) {
       console.error('Failed to submit answer:', error);
     }
@@ -222,20 +227,20 @@ function App() {
     setComments(prev => prev.filter(c => c.id !== commentId));
   };
 
-  const handleSubmitComment = (answerId: string, content: string) => {
+  const handleSubmitComment = async (answerId: string, content: string) => {
     if (!currentUser) return;
 
-    const newComment: Comment = {
-      id: Date.now().toString(),
-      answerId,
-      content,
-      authorId: currentUser.id,
-      author: currentUser,
-      createdAt: new Date(),
-      votes: 0
-    };
-
-    setComments(prev => [...prev, newComment]);
+    try {
+      const newComment = await commentsAPI.create(answerId, content);
+      setComments(prev => [...prev, newComment]);
+      
+      // Reload notifications to show the new comment notification
+      if (currentUser) {
+        loadNotifications();
+      }
+    } catch (error) {
+      console.error('Failed to submit comment:', error);
+    }
   };
 
   const selectedQuestion = selectedQuestionId 
@@ -273,6 +278,7 @@ function App() {
           onTagFilter={setSelectedTag}
           selectedTag={selectedTag}
           loading={loading}
+          onVoteChange={handleVoteChange}
         />
       )}
 

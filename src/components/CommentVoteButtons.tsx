@@ -42,29 +42,29 @@ const CommentVoteButtons: React.FC<CommentVoteButtonsProps> = ({
   };
 
   return (
-    <div className="flex flex-col items-center space-y-1">
+    <div className="flex flex-col items-center space-y-0">
       <button
         onClick={() => handleVote('up')}
         disabled={!currentUser}
-        className={`p-1.5 sm:p-1 hover:bg-gray-200 rounded transition-colors ${
-          userVote === 'up' ? 'text-green-600 bg-green-50' : 'text-gray-600'
+        className={`p-0.5 hover:bg-gray-200 rounded transition-colors ${
+          userVote === 'up' ? 'text-orange-500' : 'text-gray-400 hover:text-gray-600'
         } ${!currentUser ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
-        <ChevronUp className="h-4 w-4" />
+        <ChevronUp className="h-3 w-3" />
       </button>
       
-      <span className="text-sm font-medium text-gray-900">
+      <span className="text-xs font-medium text-gray-900 min-w-[1.5rem] text-center">
         {localVotes}
       </span>
       
       <button
         onClick={() => handleVote('down')}
         disabled={!currentUser}
-        className={`p-1.5 sm:p-1 hover:bg-gray-200 rounded transition-colors ${
-          userVote === 'down' ? 'text-red-600 bg-red-50' : 'text-gray-600'
+        className={`p-0.5 hover:bg-gray-200 rounded transition-colors ${
+          userVote === 'down' ? 'text-blue-500' : 'text-gray-400 hover:text-gray-600'
         } ${!currentUser ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
-        <ChevronDown className="h-4 w-4" />
+        <ChevronDown className="h-3 w-3" />
       </button>
     </div>
   );

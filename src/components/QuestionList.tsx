@@ -1,5 +1,6 @@
 import React from 'react';
 import { Question, Tag } from '../types';
+import VoteButtons from './VoteButtons';
 
 interface QuestionListProps {
   questions: Question[];
@@ -10,6 +11,7 @@ interface QuestionListProps {
   onTagFilter: (tagId: string | null) => void;
   selectedTag: string | null;
   loading?: boolean;
+  onVoteChange?: (targetId: string, targetType: 'question' | 'answer', newVoteCount: number) => void;
 }
 
 const QuestionList: React.FC<QuestionListProps> = ({
@@ -20,7 +22,8 @@ const QuestionList: React.FC<QuestionListProps> = ({
   onAskQuestion,
   onTagFilter,
   selectedTag,
-  loading = false
+  loading = false,
+  onVoteChange
 }) => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
@@ -116,56 +119,74 @@ const QuestionList: React.FC<QuestionListProps> = ({
           questions.map((question) => (
             <div
               key={question.id}
-              onClick={() => onQuestionClick(question.id)}
               className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-all cursor-pointer"
             >
-              {/* Question Title */}
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3 line-clamp-2">
-                {question.title}
-              </h3>
-              
-              {/* Question Description */}
-              <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4 line-clamp-2 sm:line-clamp-3">
-                {question.description.substring(0, 120)}...
-              </p>
-              
-              {/* Tags */}
-              {question.tags && question.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1 sm:gap-2 mb-3 sm:mb-4">
-                  {question.tags.slice(0, 3).map((tag, index) => (
-                    <span
-                      key={typeof tag === 'string' ? index : tag.id}
-                      className="px-2 py-1 text-xs rounded-md"
-                      style={{ 
-                        backgroundColor: typeof tag === 'string' ? '#e5e7eb' : `${tag.color}20`, 
-                        color: typeof tag === 'string' ? '#374151' : tag.color
-                      }}
-                    >
-                      {typeof tag === 'string' ? tag : tag.name}
-                    </span>
-                  ))}
-                  {question.tags.length > 3 && (
-                    <span className="px-2 py-1 text-xs text-gray-500">
-                      +{question.tags.length - 3} more
-                    </span>
+              <div className="flex items-start space-x-3">
+                {/* Voting - Left side like Reddit */}
+                <div className="flex flex-col items-center space-y-0 flex-shrink-0">
+                  {onVoteChange && (
+                    <VoteButtons
+                      targetId={question.id}
+                      targetType="question"
+                      currentVotes={question.votes}
+                      currentUser={currentUser}
+                      onVoteChange={(newVoteCount) => onVoteChange(question.id, 'question', newVoteCount)}
+                      size="sm"
+                    />
                   )}
                 </div>
-              )}
-              
-              {/* Question Meta */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs sm:text-sm text-gray-500 space-y-1 sm:space-y-0">
-                <div className="flex items-center space-x-2 sm:space-x-4">
-                  <span>By {question.author?.username || 'Unknown'}</span>
-                  <span className="hidden sm:inline">•</span>
-                  <span>{question.answerCount} answers</span>
-                  <span className="hidden sm:inline">•</span>
-                  <span>{question.votes} votes</span>
-                </div>
-                <div className="flex items-center space-x-2 sm:space-x-4">
-                  <span className="sm:hidden">{question.votes} votes</span>
-                  <span className="text-xs text-gray-400">
-                    {new Date(question.createdAt).toLocaleDateString()}
-                  </span>
+
+                {/* Question Content */}
+                <div className="flex-1 min-w-0" onClick={() => onQuestionClick(question.id)}>
+                  {/* Question Title */}
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3 line-clamp-2">
+                    {question.title}
+                  </h3>
+                  
+                  {/* Question Description */}
+                  <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4 line-clamp-2 sm:line-clamp-3">
+                    {question.description.substring(0, 120)}...
+                  </p>
+                  
+                  {/* Tags */}
+                  {question.tags && question.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 sm:gap-2 mb-3 sm:mb-4">
+                      {question.tags.slice(0, 3).map((tag, index) => (
+                        <span
+                          key={typeof tag === 'string' ? index : tag.id}
+                          className="px-2 py-1 text-xs rounded-md"
+                          style={{ 
+                            backgroundColor: typeof tag === 'string' ? '#e5e7eb' : `${tag.color}20`, 
+                            color: typeof tag === 'string' ? '#374151' : tag.color
+                          }}
+                        >
+                          {typeof tag === 'string' ? tag : tag.name}
+                        </span>
+                      ))}
+                      {question.tags.length > 3 && (
+                        <span className="px-2 py-1 text-xs text-gray-500">
+                          +{question.tags.length - 3} more
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Question Meta */}
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs sm:text-sm text-gray-500 space-y-1 sm:space-y-0">
+                    <div className="flex items-center space-x-2 sm:space-x-4">
+                      <span>By {question.author?.username || 'Unknown'}</span>
+                      <span className="hidden sm:inline">•</span>
+                      <span>{question.answerCount} answers</span>
+                      <span className="hidden sm:inline">•</span>
+                      <span>{question.votes} votes</span>
+                    </div>
+                    <div className="flex items-center space-x-2 sm:space-x-4">
+                      <span className="sm:hidden">{question.votes} votes</span>
+                      <span className="text-xs text-gray-400">
+                        {new Date(question.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

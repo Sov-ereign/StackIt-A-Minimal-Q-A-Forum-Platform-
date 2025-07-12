@@ -59,10 +59,14 @@ router.post('/:questionId', auth, async (req, res) => {
     // Create notification for question author
     const question = await Question.findById(req.params.questionId);
     if (question && question.author.toString() !== req.user.id) {
+      // Get the current user's username
+      const User = require('../models/User');
+      const currentUser = await User.findById(req.user.id);
+      
       const notification = new Notification({
         userId: question.author,
         type: 'answer',
-        message: `${req.user.username} answered your question "${question.title}"`,
+        message: `${currentUser.username} answered your question "${question.title}"`,
         questionId: question._id,
         answerId: answer._id
       });

@@ -77,21 +77,21 @@ const VoteButtons: React.FC<VoteButtonsProps> = ({
     switch (size) {
       case 'sm':
         return {
-          button: 'p-1.5 sm:p-1',
-          icon: 'h-4 w-4',
-          text: 'text-sm'
+          button: 'p-0.5',
+          icon: 'h-3 w-3',
+          text: 'text-xs'
         };
       case 'lg':
         return {
-          button: 'p-3 sm:p-2',
-          icon: 'h-6 w-6',
-          text: 'text-lg'
+          button: 'p-1',
+          icon: 'h-4 w-4',
+          text: 'text-sm'
         };
       default:
         return {
-          button: 'p-2.5 sm:p-2',
-          icon: 'h-5 w-5',
-          text: 'text-base sm:text-lg'
+          button: 'p-0.5',
+          icon: 'h-3 w-3',
+          text: 'text-xs'
         };
     }
   };
@@ -99,18 +99,18 @@ const VoteButtons: React.FC<VoteButtonsProps> = ({
   const sizeClasses = getSizeClasses();
 
   return (
-    <div className="flex flex-col items-center space-y-1">
+    <div className="flex flex-col items-center space-y-0">
       <button
         onClick={() => handleVote('up')}
         disabled={!currentUser || isLoading}
         className={`${sizeClasses.button} hover:bg-gray-100 rounded transition-colors ${
-          userVote === 'up' ? 'text-green-600 bg-green-50' : 'text-gray-600'
+          userVote === 'up' ? 'text-orange-500' : 'text-gray-400 hover:text-gray-600'
         } ${!currentUser ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         <ChevronUp className={sizeClasses.icon} />
       </button>
       
-      <span className={`font-semibold text-gray-900 ${sizeClasses.text}`}>
+      <span className={`font-medium text-gray-900 ${sizeClasses.text} min-w-[1.5rem] text-center`}>
         {currentVotes}
       </span>
       
@@ -118,7 +118,7 @@ const VoteButtons: React.FC<VoteButtonsProps> = ({
         onClick={() => handleVote('down')}
         disabled={!currentUser || isLoading}
         className={`${sizeClasses.button} hover:bg-gray-100 rounded transition-colors ${
-          userVote === 'down' ? 'text-red-600 bg-red-50' : 'text-gray-600'
+          userVote === 'down' ? 'text-blue-500' : 'text-gray-400 hover:text-gray-600'
         } ${!currentUser ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         <ChevronDown className={sizeClasses.icon} />

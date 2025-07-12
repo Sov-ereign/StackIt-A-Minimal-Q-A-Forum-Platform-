@@ -125,6 +125,37 @@ export const reportsAPI = {
   },
 };
 
+// Comments API
+export const commentsAPI = {
+  // Get comments for an answer
+  getByAnswer: async (answerId: string) => {
+    return apiRequest(`/comments/${answerId}`);
+  },
+
+  // Create a new comment
+  create: async (answerId: string, content: string) => {
+    return apiRequest(`/comments/${answerId}`, {
+      method: 'POST',
+      body: JSON.stringify({ content }),
+    });
+  },
+
+  // Update a comment
+  update: async (commentId: string, content: string) => {
+    return apiRequest(`/comments/${commentId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ content }),
+    });
+  },
+
+  // Delete a comment
+  delete: async (commentId: string) => {
+    return apiRequest(`/comments/${commentId}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
 // Notifications API
 export const notificationsAPI = {
   // Get user's notifications

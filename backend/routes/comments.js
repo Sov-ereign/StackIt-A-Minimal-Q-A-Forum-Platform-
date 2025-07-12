@@ -39,10 +39,14 @@ router.post('/:answerId', auth, async (req, res) => {
     const answer = await Answer.findById(req.params.answerId);
     if (answer && answer.author.toString() !== req.user.id) {
       const question = await Question.findById(answer.question);
+      // Get the current user's username
+      const User = require('../models/User');
+      const currentUser = await User.findById(req.user.id);
+      
       const notification = new Notification({
         userId: answer.author,
         type: 'comment',
-        message: `${req.user.username} commented on your answer about "${question?.title || 'a question'}"`,
+        message: `${currentUser.username} commented on your answer about "${question?.title || 'a question'}"`,
         questionId: answer.question,
         answerId: answer._id,
         commentId: comment._id
@@ -55,6 +59,8 @@ router.post('/:answerId', auth, async (req, res) => {
     const mentions = comment.content.match(mentionRegex);
     if (mentions) {
       const User = require('../models/User');
+      const currentUser = await User.findById(req.user.id);
+      
       for (const mention of mentions) {
         const username = mention.substring(1); // Remove @
         const mentionedUser = await User.findOne({ username });
@@ -62,7 +68,7 @@ router.post('/:answerId', auth, async (req, res) => {
           const notification = new Notification({
             userId: mentionedUser._id,
             type: 'mention',
-            message: `${req.user.username} mentioned you in a comment`,
+            message: `${currentUser.username} mentioned you in a comment`,
             questionId: answer?.question,
             answerId: answer?._id,
             commentId: comment._id
