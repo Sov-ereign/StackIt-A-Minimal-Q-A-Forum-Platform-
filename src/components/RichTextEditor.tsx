@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Bold, 
   Italic, 
@@ -28,19 +28,98 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 }) => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
+  const lastCursorPosition = useRef<{ start: number; end: number } | null>(null);
 
   const emojis = ['😊', '😂', '🤔', '👍', '👎', '❤️', '🎉', '🚀', '💡', '⚡', '🔥', '💯'];
+
+  // Save cursor position before content update
+  const saveCursorPosition = () => {
+    if (editorRef.current) {
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const preCaretRange = range.cloneRange();
+        preCaretRange.selectNodeContents(editorRef.current);
+        preCaretRange.setEnd(range.endContainer, range.endOffset);
+        const end = preCaretRange.toString().length;
+        
+        preCaretRange.setStart(range.startContainer, range.startOffset);
+        const start = preCaretRange.toString().length;
+        
+        lastCursorPosition.current = { start, end };
+      }
+    }
+  };
+
+  // Restore cursor position after content update
+  const restoreCursorPosition = () => {
+    if (editorRef.current && lastCursorPosition.current) {
+      const { start, end } = lastCursorPosition.current;
+      const selection = window.getSelection();
+      const range = document.createRange();
+      
+      let charIndex = 0;
+      let startNode: Node | null = null;
+      let startOffset = 0;
+      let endNode: Node | null = null;
+      let endOffset = 0;
+      
+      const traverseNodes = (node: Node) => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          const nodeLength = node.textContent?.length || 0;
+          if (!startNode && charIndex + nodeLength >= start) {
+            startNode = node;
+            startOffset = start - charIndex;
+          }
+          if (!endNode && charIndex + nodeLength >= end) {
+            endNode = node;
+            endOffset = end - charIndex;
+            return true; // Stop traversal
+          }
+          charIndex += nodeLength;
+        } else {
+          for (let i = 0; i < node.childNodes.length; i++) {
+            if (traverseNodes(node.childNodes[i])) {
+              return true;
+            }
+          }
+        }
+        return false;
+      };
+      
+      traverseNodes(editorRef.current);
+      
+      if (startNode && endNode) {
+        range.setStart(startNode, startOffset);
+        range.setEnd(endNode, endOffset);
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+      }
+    }
+  };
+
+  // Update content and preserve cursor position
+  const updateContent = () => {
+    if (editorRef.current) {
+      saveCursorPosition();
+      onChange(editorRef.current.innerHTML);
+    }
+  };
+
+  // Restore cursor position when value changes externally
+  useEffect(() => {
+    if (editorRef.current && lastCursorPosition.current) {
+      // Use a small delay to ensure the DOM has updated
+      setTimeout(() => {
+        restoreCursorPosition();
+      }, 0);
+    }
+  }, [value]);
 
   const execCommand = (command: string, value?: string) => {
     document.execCommand(command, false, value);
     editorRef.current?.focus();
     updateContent();
-  };
-
-  const updateContent = () => {
-    if (editorRef.current) {
-      onChange(editorRef.current.innerHTML);
-    }
   };
 
   const insertEmoji = (emoji: string) => {
