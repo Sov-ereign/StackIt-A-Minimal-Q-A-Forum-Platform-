@@ -36,7 +36,7 @@ community.
 
 > 🎯 Click to explore the live experience of StackIt user-friendly interface and advanced features.
 
----
+
 
 
 ## 👥 Team Members
