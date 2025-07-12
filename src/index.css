@@ -18,3 +18,102 @@ input::placeholder, textarea::placeholder {
   direction: ltr !important;
   text-align: left !important;
 }
+
+/* Mobile-specific improvements */
+@layer utilities {
+  /* Better touch targets for mobile */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Prevent text selection on mobile */
+  .no-select {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  /* Smooth scrolling for mobile */
+  .smooth-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Better focus states for mobile */
+  .focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+}
+
+/* Mobile-specific base styles */
+@layer base {
+  /* Prevent zoom on input focus on iOS */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  textarea {
+    font-size: 16px;
+  }
+  
+  /* Better button touch targets */
+  button {
+    touch-action: manipulation;
+  }
+  
+  /* Prevent horizontal scroll on mobile */
+  body {
+    overflow-x: hidden;
+  }
+}
+
+/* Custom scrollbar for better mobile experience */
+@layer components {
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db #f3f4f6;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #f3f4f6;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+  }
+}
+
+/* Line clamp utilities for better text truncation */
+@layer utilities {
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+  
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+  
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+}

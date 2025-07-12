@@ -77,21 +77,21 @@ const VoteButtons: React.FC<VoteButtonsProps> = ({
     switch (size) {
       case 'sm':
         return {
-          button: 'p-1',
+          button: 'p-1.5 sm:p-1',
           icon: 'h-4 w-4',
           text: 'text-sm'
         };
       case 'lg':
         return {
-          button: 'p-2',
+          button: 'p-3 sm:p-2',
           icon: 'h-6 w-6',
           text: 'text-lg'
         };
       default:
         return {
-          button: 'p-2',
+          button: 'p-2.5 sm:p-2',
           icon: 'h-5 w-5',
-          text: 'text-lg'
+          text: 'text-base sm:text-lg'
         };
     }
   };

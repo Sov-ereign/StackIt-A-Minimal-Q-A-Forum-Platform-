@@ -39,8 +39,8 @@ const Comment: React.FC<CommentProps> = ({
   const canDelete = currentUser?.id === comment.authorId;
 
   return (
-    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-      <div className="flex items-start space-x-3">
+    <div className="bg-gray-50 rounded-lg p-3 sm:p-4 border border-gray-200">
+      <div className="flex items-start space-x-2 sm:space-x-3">
         {/* Voting */}
         <CommentVoteButtons
           commentId={comment.id}
@@ -59,16 +59,16 @@ const Comment: React.FC<CommentProps> = ({
                 placeholder="Edit your comment..."
                 className="min-h-[100px]"
               />
-              <div className="flex items-center space-x-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
                 <button
                   onClick={handleEdit}
-                  className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+                  className="px-3 py-1.5 sm:py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
                 >
                   Save
                 </button>
                 <button
                   onClick={handleCancel}
-                  className="px-3 py-1 border border-gray-300 text-sm rounded hover:bg-gray-50 transition-colors"
+                  className="px-3 py-1.5 sm:py-1 border border-gray-300 text-sm rounded hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
@@ -82,8 +82,8 @@ const Comment: React.FC<CommentProps> = ({
           )}
 
           {/* Author and Actions */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+            <div className="flex items-center space-x-2 sm:space-x-3">
               {comment.author?.avatar ? (
                 <img
                   src={comment.author.avatar}
@@ -101,11 +101,11 @@ const Comment: React.FC<CommentProps> = ({
               </div>
             </div>
             
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-1 self-start sm:self-auto">
               {canEdit && (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="p-1 text-gray-400 hover:text-gray-600 rounded transition-colors"
+                  className="p-1.5 sm:p-1 text-gray-400 hover:text-gray-600 rounded transition-colors"
                   title="Edit comment"
                 >
                   <Edit className="h-3 w-3" />
@@ -114,14 +114,14 @@ const Comment: React.FC<CommentProps> = ({
               {canDelete && (
                 <button
                   onClick={() => onDelete(comment.id)}
-                  className="p-1 text-gray-400 hover:text-red-600 rounded transition-colors"
+                  className="p-1.5 sm:p-1 text-gray-400 hover:text-red-600 rounded transition-colors"
                   title="Delete comment"
                 >
                   <Trash2 className="h-3 w-3" />
                 </button>
               )}
               <button
-                className="p-1 text-gray-400 hover:text-gray-600 rounded transition-colors"
+                className="p-1.5 sm:p-1 text-gray-400 hover:text-gray-600 rounded transition-colors"
                 title="Flag comment"
               >
                 <Flag className="h-3 w-3" />

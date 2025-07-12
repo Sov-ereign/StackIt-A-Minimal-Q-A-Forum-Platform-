@@ -46,7 +46,7 @@ const CommentVoteButtons: React.FC<CommentVoteButtonsProps> = ({
       <button
         onClick={() => handleVote('up')}
         disabled={!currentUser}
-        className={`p-1 hover:bg-gray-200 rounded transition-colors ${
+        className={`p-1.5 sm:p-1 hover:bg-gray-200 rounded transition-colors ${
           userVote === 'up' ? 'text-green-600 bg-green-50' : 'text-gray-600'
         } ${!currentUser ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
@@ -60,7 +60,7 @@ const CommentVoteButtons: React.FC<CommentVoteButtonsProps> = ({
       <button
         onClick={() => handleVote('down')}
         disabled={!currentUser}
-        className={`p-1 hover:bg-gray-200 rounded transition-colors ${
+        className={`p-1.5 sm:p-1 hover:bg-gray-200 rounded transition-colors ${
           userVote === 'down' ? 'text-red-600 bg-red-50' : 'text-gray-600'
         } ${!currentUser ? 'opacity-50 cursor-not-allowed' : ''}`}
       >

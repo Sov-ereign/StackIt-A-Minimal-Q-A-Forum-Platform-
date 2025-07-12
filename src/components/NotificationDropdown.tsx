@@ -28,19 +28,19 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   };
 
   return (
-    <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-96 overflow-y-auto">
-      <div className="px-4 py-2 border-b border-gray-100 flex justify-between items-center">
+    <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-96 overflow-y-auto">
+      <div className="px-3 sm:px-4 py-2 border-b border-gray-100 flex justify-between items-center">
         <h3 className="text-sm font-semibold text-gray-900">Notifications</h3>
         <button
           onClick={onClose}
-          className="text-gray-400 hover:text-gray-600 text-sm"
+          className="text-gray-400 hover:text-gray-600 text-sm p-1"
         >
           ✕
         </button>
       </div>
       
       {notifications.length === 0 ? (
-        <div className="px-4 py-8 text-center text-gray-500">
+        <div className="px-3 sm:px-4 py-8 text-center text-gray-500">
           <CheckCircle className="h-8 w-8 mx-auto mb-2 text-gray-300" />
           <p className="text-sm">No notifications yet</p>
         </div>
@@ -49,7 +49,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
           {notifications.map((notification) => (
             <div
               key={notification.id}
-              className={`px-4 py-3 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors ${
+              className={`px-3 sm:px-4 py-3 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors ${
                 !notification.read ? 'bg-blue-50' : ''
               }`}
               onClick={() => {
@@ -58,12 +58,12 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                 }
               }}
             >
-              <div className="flex items-start space-x-3">
+              <div className="flex items-start space-x-2 sm:space-x-3">
                 <div className="flex-shrink-0 mt-1">
                   {getIcon(notification.type)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-900">
+                  <p className="text-sm text-gray-900 leading-relaxed">
                     {notification.message}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">

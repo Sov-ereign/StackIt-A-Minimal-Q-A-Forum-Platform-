@@ -50,13 +50,16 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-sm sm:max-w-md">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">
+          <h2 className="text-lg sm:text-xl font-bold">
             {isRegister ? 'Create Account' : 'Sign In'}
           </h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+          <button 
+            onClick={onClose} 
+            className="text-gray-500 hover:text-gray-700 p-1"
+          >
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -67,9 +70,9 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="space-y-4">
           {isRegister && (
-            <div className="mb-4">
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Username
               </label>
@@ -79,13 +82,13 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
                 value={formData.username}
                 onChange={handleInputChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                 placeholder="Enter username"
               />
             </div>
           )}
 
-          <div className="mb-4">
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Email
             </label>
@@ -95,12 +98,12 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
               value={formData.email}
               onChange={handleInputChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
               placeholder="Enter email"
             />
           </div>
 
-          <div className="mb-6">
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Password
             </label>
@@ -110,7 +113,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
               value={formData.password}
               onChange={handleInputChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
               placeholder="Enter password"
             />
           </div>
@@ -118,7 +121,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base font-medium"
           >
             {loading ? 'Loading...' : (isRegister ? 'Create Account' : 'Sign In')}
           </button>

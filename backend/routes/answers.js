@@ -1,6 +1,7 @@
 const express = require('express');
 const Answer = require('../models/Answer');
 const Question = require('../models/Question');
+const Notification = require('../models/Notification');
 const auth = require('../middleware/auth');
 
 const router = express.Router();
@@ -54,6 +55,19 @@ router.post('/:questionId', auth, async (req, res) => {
     
     // Increment answerCount in Question
     await Question.findByIdAndUpdate(req.params.questionId, { $inc: { answerCount: 1 } });
+    
+    // Create notification for question author
+    const question = await Question.findById(req.params.questionId);
+    if (question && question.author.toString() !== req.user.id) {
+      const notification = new Notification({
+        userId: question.author,
+        type: 'answer',
+        message: `${req.user.username} answered your question "${question.title}"`,
+        questionId: question._id,
+        answerId: answer._id
+      });
+      await notification.save();
+    }
     
     // Transform the response to include id field
     const answerObj = answer.toObject();

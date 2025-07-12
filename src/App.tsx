@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, Question, Answer, Tag, Notification, Comment } from './types';
 import { tags, notifications as initialNotifications, comments as initialComments } from './data/mockData';
-import { authAPI, questionsAPI, answersAPI, votesAPI, reportsAPI } from './services/api';
+import { authAPI, questionsAPI, answersAPI, votesAPI, reportsAPI, notificationsAPI } from './services/api';
 import Header from './components/Header';
 import QuestionList from './components/QuestionList';
 import QuestionDetail from './components/QuestionDetail';
@@ -22,7 +22,7 @@ function App() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [comments, setComments] = useState(initialComments);
-  const [notifications, setNotifications] = useState(initialNotifications);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Load questions and check for existing user session on component mount
@@ -30,6 +30,15 @@ function App() {
     loadQuestions();
     checkExistingUser();
   }, []);
+
+  // Load notifications when user changes
+  useEffect(() => {
+    if (currentUser) {
+      loadNotifications();
+    } else {
+      setNotifications([]);
+    }
+  }, [currentUser]);
 
   const checkExistingUser = async () => {
     try {
@@ -73,10 +82,26 @@ function App() {
     console.log('Search:', query);
   };
 
-  const handleMarkNotificationRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(n => n.id === id ? { ...n, read: true } : n)
-    );
+  const loadNotifications = async () => {
+    if (!currentUser) return;
+    
+    try {
+      const notificationsData = await notificationsAPI.getAll();
+      setNotifications(notificationsData);
+    } catch (error) {
+      console.error('Failed to load notifications:', error);
+    }
+  };
+
+  const handleMarkNotificationRead = async (id: string) => {
+    try {
+      await notificationsAPI.markAsRead(id);
+      setNotifications(prev => 
+        prev.map(n => n.id === id ? { ...n, read: true } : n)
+      );
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error);
+    }
   };
 
   const handleQuestionClick = async (questionId: string) => {
@@ -211,24 +236,6 @@ function App() {
     };
 
     setComments(prev => [...prev, newComment]);
-    
-    // Create notification for answer author
-    const answer = answers.find(a => a.id === answerId);
-    if (answer && answer.authorId !== currentUser.id) {
-      const question = questions.find(q => q.id === answer.questionId);
-      const newNotification: Notification = {
-        id: Date.now().toString(),
-        userId: answer.authorId,
-        type: 'comment',
-        message: `${currentUser.username} commented on your answer about "${question?.title}"`,
-        questionId: answer.questionId,
-        answerId: answerId,
-        commentId: newComment.id,
-        createdAt: new Date(),
-        read: false
-      };
-      setNotifications(prev => [...prev, newNotification]);
-    }
   };
 
   const selectedQuestion = selectedQuestionId 

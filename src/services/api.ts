@@ -125,6 +125,21 @@ export const reportsAPI = {
   },
 };
 
+// Notifications API
+export const notificationsAPI = {
+  // Get user's notifications
+  getAll: async () => {
+    return apiRequest('/notifications');
+  },
+
+  // Mark notification as read
+  markAsRead: async (id: string) => {
+    return apiRequest(`/notifications/${id}/read`, {
+      method: 'PUT',
+    });
+  },
+};
+
 // Admin API
 export const adminAPI = {
   // Get moderation dashboard stats

@@ -42,7 +42,7 @@ const CommentList: React.FC<CommentListProps> = ({
   return (
     <div className="mt-4">
       {/* Comments Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 space-y-2 sm:space-y-0">
         <div className="flex items-center space-x-2">
           <button
             onClick={() => setShowComments(!showComments)}
@@ -62,7 +62,7 @@ const CommentList: React.FC<CommentListProps> = ({
         {currentUser && (
           <button
             onClick={() => setShowCommentForm(!showCommentForm)}
-            className="flex items-center space-x-1 text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
+            className="flex items-center space-x-1 text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors self-start sm:self-auto"
           >
             <MessageCircle className="h-4 w-4" />
             <span>Add Comment</span>
@@ -72,7 +72,7 @@ const CommentList: React.FC<CommentListProps> = ({
 
       {/* Comment Form */}
       {showCommentForm && currentUser && (
-        <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="mb-4 p-3 sm:p-4 bg-blue-50 rounded-lg border border-blue-200">
           <h4 className="text-sm font-medium text-gray-900 mb-2">Add a Comment</h4>
           <RichTextEditor
             value={commentContent}
@@ -80,11 +80,11 @@ const CommentList: React.FC<CommentListProps> = ({
             placeholder="Share your thoughts..."
             className="mb-3"
           />
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
             <button
               onClick={handleSubmitComment}
               disabled={!commentContent.trim()}
-              className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              className="px-3 py-1.5 sm:py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
             >
               Post Comment
             </button>
@@ -93,7 +93,7 @@ const CommentList: React.FC<CommentListProps> = ({
                 setShowCommentForm(false);
                 setCommentContent('');
               }}
-              className="px-3 py-1 border border-gray-300 text-sm rounded hover:bg-gray-50 transition-colors"
+              className="px-3 py-1.5 sm:py-1 border border-gray-300 text-sm rounded hover:bg-gray-50 transition-colors"
             >
               Cancel
             </button>
@@ -103,7 +103,7 @@ const CommentList: React.FC<CommentListProps> = ({
 
       {/* Comments List */}
       {showComments && (
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           {sortedComments.map((comment) => (
             <Comment
               key={comment.id}
