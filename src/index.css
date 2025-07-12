@@ -1,3 +1,20 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Global text direction fixes */
+input, textarea, [contenteditable] {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+input::placeholder, textarea::placeholder {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+/* Ensure all content inside contentEditable follows LTR */
+[contenteditable] * {
+  direction: ltr !important;
+  text-align: left !important;
+}

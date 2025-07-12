@@ -23,11 +23,19 @@ const AskQuestion: React.FC<AskQuestionProps> = ({ availableTags, onSubmit, onBa
   };
 
   const toggleTag = (tagId: string) => {
-    setSelectedTags(prev => 
-      prev.includes(tagId) 
+    setSelectedTags(prev => {
+      const isAlreadySelected = prev.includes(tagId);
+      const newTags = isAlreadySelected 
         ? prev.filter(id => id !== tagId)
-        : [...prev, tagId]
-    );
+        : [...prev, tagId];
+      
+      // Close dropdown after selecting a tag (but not when removing)
+      if (!isAlreadySelected) {
+        setShowTagDropdown(false);
+      }
+      
+      return newTags;
+    });
   };
 
   const isFormValid = title.trim() && description.trim() && selectedTags.length > 0;
@@ -68,6 +76,7 @@ const AskQuestion: React.FC<AskQuestionProps> = ({ availableTags, onSubmit, onBa
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g., How to implement authentication in React?"
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-lg"
+            style={{ direction: 'ltr', textAlign: 'left' }}
             maxLength={200}
           />
           <div className="flex justify-between items-center mt-2">

@@ -1,4 +1,4 @@
-import { User, Question, Answer, Tag, Notification } from '../types';
+import { User, Question, Answer, Tag, Notification, Comment } from '../types';
 
 export const tags: Tag[] = [
   { id: '1', name: 'React', color: '#61DAFB' },
@@ -17,7 +17,7 @@ export const users: User[] = [
     username: 'alice_dev',
     email: 'alice@example.com',
     role: 'user',
-    avatar: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
+    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
     reputation: 1250
   },
   {
@@ -25,7 +25,7 @@ export const users: User[] = [
     username: 'bob_react',
     email: 'bob@example.com',
     role: 'user',
-    avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
     reputation: 890
   },
   {
@@ -33,7 +33,7 @@ export const users: User[] = [
     username: 'charlie_admin',
     email: 'charlie@example.com',
     role: 'admin',
-    avatar: 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
     reputation: 2100
   }
 ];
@@ -155,6 +155,36 @@ export const answers: Answer[] = [
   }
 ];
 
+export const comments: Comment[] = [
+  {
+    id: '1',
+    answerId: '1',
+    content: 'Great answer! I would also recommend using a library like `react-query` for better token management.',
+    authorId: '2',
+    author: users[1],
+    createdAt: new Date('2024-01-15T11:30:00Z'),
+    votes: 3
+  },
+  {
+    id: '2',
+    answerId: '1',
+    content: 'Thanks for the detailed explanation. The httpOnly cookie approach is definitely more secure.',
+    authorId: '1',
+    author: users[0],
+    createdAt: new Date('2024-01-15T12:00:00Z'),
+    votes: 1
+  },
+  {
+    id: '3',
+    answerId: '3',
+    content: 'This is exactly what I needed! The one-dimensional vs two-dimensional explanation really helped clarify things.',
+    authorId: '2',
+    author: users[1],
+    createdAt: new Date('2024-01-13T17:00:00Z'),
+    votes: 2
+  }
+];
+
 export const notifications: Notification[] = [
   {
     id: '1',
@@ -174,6 +204,28 @@ export const notifications: Notification[] = [
     questionId: '3',
     answerId: '3',
     createdAt: new Date('2024-01-13T16:45:00Z'),
+    read: true
+  },
+  {
+    id: '3',
+    userId: '3',
+    type: 'comment',
+    message: 'bob_react commented on your answer about JWT authentication',
+    questionId: '1',
+    answerId: '1',
+    commentId: '1',
+    createdAt: new Date('2024-01-15T11:30:00Z'),
+    read: false
+  },
+  {
+    id: '4',
+    userId: '3',
+    type: 'comment',
+    message: 'alice_dev commented on your answer about JWT authentication',
+    questionId: '1',
+    answerId: '1',
+    commentId: '2',
+    createdAt: new Date('2024-01-15T12:00:00Z'),
     read: true
   }
 ];

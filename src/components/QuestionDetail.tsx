@@ -1,26 +1,37 @@
 import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { ChevronUp, ChevronDown, MessageCircle, Check, ArrowLeft, Flag } from 'lucide-react';
-import { Question, Answer, User } from '../types';
+import { Question, Answer, User, Comment } from '../types';
 import RichTextEditor from './RichTextEditor';
+import CommentList from './CommentList';
 
 interface QuestionDetailProps {
   question: Question;
   answers: Answer[];
+  comments: Comment[];
   currentUser: User | null;
   onVote: (targetId: string, targetType: 'question' | 'answer', voteType: 'up' | 'down') => void;
   onAcceptAnswer: (answerId: string) => void;
   onSubmitAnswer: (content: string) => void;
+  onCommentVote: (commentId: string, voteType: 'up' | 'down') => void;
+  onEditComment: (commentId: string, newContent: string) => void;
+  onDeleteComment: (commentId: string) => void;
+  onSubmitComment: (answerId: string, content: string) => void;
   onBack: () => void;
 }
 
 const QuestionDetail: React.FC<QuestionDetailProps> = ({
   question,
   answers,
+  comments,
   currentUser,
   onVote,
   onAcceptAnswer,
   onSubmitAnswer,
+  onCommentVote,
+  onEditComment,
+  onDeleteComment,
+  onSubmitComment,
   onBack
 }) => {
   const [answerContent, setAnswerContent] = useState('');
@@ -211,6 +222,17 @@ const QuestionDetail: React.FC<QuestionDetailProps> = ({
                     <Flag className="h-4 w-4" />
                   </button>
                 </div>
+
+                {/* Comments */}
+                <CommentList
+                  comments={comments.filter(c => c.answerId === answer.id)}
+                  answerId={answer.id}
+                  currentUser={currentUser}
+                  onVote={onCommentVote}
+                  onEdit={onEditComment}
+                  onDelete={onDeleteComment}
+                  onSubmit={(content) => onSubmitComment(answer.id, content)}
+                />
               </div>
             </div>
           </div>

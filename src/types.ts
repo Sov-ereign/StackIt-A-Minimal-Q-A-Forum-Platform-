@@ -38,6 +38,16 @@ export interface Answer {
   isAccepted: boolean;
 }
 
+export interface Comment {
+  id: string;
+  answerId: string;
+  content: string;
+  authorId: string;
+  author: User;
+  createdAt: Date;
+  votes: number;
+}
+
 export interface Notification {
   id: string;
   userId: string;
@@ -45,6 +55,7 @@ export interface Notification {
   message: string;
   questionId?: string;
   answerId?: string;
+  commentId?: string;
   createdAt: Date;
   read: boolean;
 }

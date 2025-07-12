@@ -1,30 +1,57 @@
-import React, { useState } from 'react';
-import { User, Question, Answer, Tag, Notification } from './types';
-import { users, questions as initialQuestions, answers as initialAnswers, tags, notifications as initialNotifications } from './data/mockData';
+import React, { useState, useEffect } from 'react';
+import { User, Question, Answer, Tag, Notification, Comment } from './types';
+import { tags, notifications as initialNotifications, comments as initialComments } from './data/mockData';
+import { authAPI, questionsAPI, answersAPI, votesAPI } from './services/api';
 import Header from './components/Header';
 import QuestionList from './components/QuestionList';
 import QuestionDetail from './components/QuestionDetail';
 import AskQuestion from './components/AskQuestion';
+import LoginModal from './components/LoginModal';
 
 type View = 'list' | 'detail' | 'ask';
 
 function App() {
-  const [currentUser, setCurrentUser] = useState<User | null>(users[0]); // Simulate logged in user
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentView, setCurrentView] = useState<View>('list');
   const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   
   // State for data
-  const [questions, setQuestions] = useState(initialQuestions);
-  const [answers, setAnswers] = useState(initialAnswers);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [answers, setAnswers] = useState<Answer[]>([]);
+  const [comments, setComments] = useState(initialComments);
   const [notifications, setNotifications] = useState(initialNotifications);
+  const [loading, setLoading] = useState(true);
+
+  // Load questions on component mount
+  useEffect(() => {
+    loadQuestions();
+  }, []);
+
+  const loadQuestions = async () => {
+    try {
+      setLoading(true);
+      const questionsData = await questionsAPI.getAll();
+      setQuestions(questionsData);
+    } catch (error) {
+      console.error('Failed to load questions:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogin = () => {
-    // Simulate login - in real app this would open a login modal/page
-    setCurrentUser(users[0]);
+    setShowLoginModal(true);
+  };
+
+  const handleLoginSuccess = (user: User) => {
+    setCurrentUser(user);
+    setShowLoginModal(false);
   };
 
   const handleLogout = () => {
+    authAPI.logout();
     setCurrentUser(null);
   };
 
@@ -39,32 +66,24 @@ function App() {
     );
   };
 
-  const handleQuestionClick = (questionId: string) => {
+  const handleQuestionClick = async (questionId: string) => {
     setSelectedQuestionId(questionId);
     setCurrentView('detail');
+    await loadAnswers(questionId);
   };
 
-  const handleVote = (targetId: string, targetType: 'question' | 'answer', voteType: 'up' | 'down') => {
+  const handleVote = async (targetId: string, targetType: 'question' | 'answer', voteType: 'up' | 'down') => {
     if (!currentUser) return;
 
-    const voteValue = voteType === 'up' ? 1 : -1;
-    
-    if (targetType === 'question') {
-      setQuestions(prev => 
-        prev.map(q => 
-          q.id === targetId 
-            ? { ...q, votes: q.votes + voteValue }
-            : q
-        )
-      );
-    } else {
-      setAnswers(prev => 
-        prev.map(a => 
-          a.id === targetId 
-            ? { ...a, votes: a.votes + voteValue }
-            : a
-        )
-      );
+    try {
+      await votesAPI.vote(targetId, targetType, voteType);
+      // Reload questions to get updated vote counts
+      await loadQuestions();
+      if (selectedQuestionId) {
+        await loadAnswers(selectedQuestionId);
+      }
+    } catch (error) {
+      console.error('Failed to vote:', error);
     }
   };
 
@@ -91,68 +110,101 @@ function App() {
     );
   };
 
-  const handleSubmitAnswer = (content: string) => {
+  const loadAnswers = async (questionId: string) => {
+    try {
+      const answersData = await answersAPI.getByQuestion(questionId);
+      setAnswers(answersData);
+    } catch (error) {
+      console.error('Failed to load answers:', error);
+    }
+  };
+
+  const handleSubmitAnswer = async (content: string) => {
     if (!currentUser || !selectedQuestionId) return;
 
-    const newAnswer: Answer = {
+    try {
+      await answersAPI.create(selectedQuestionId, content);
+      await loadAnswers(selectedQuestionId);
+      await loadQuestions(); // Update answer count
+    } catch (error) {
+      console.error('Failed to submit answer:', error);
+    }
+  };
+
+  const handleSubmitQuestion = async (title: string, description: string, tagIds: string[]) => {
+    if (!currentUser) return;
+
+    try {
+      const selectedTags = tags.filter(tag => tagIds.includes(tag.id)).map(tag => tag.name);
+      await questionsAPI.create(title, description, selectedTags);
+      await loadQuestions();
+      setCurrentView('list');
+    } catch (error) {
+      console.error('Failed to submit question:', error);
+    }
+  };
+
+  // Comment handlers
+  const handleCommentVote = (commentId: string, voteType: 'up' | 'down') => {
+    if (!currentUser) return;
+
+    const voteValue = voteType === 'up' ? 1 : -1;
+    
+    setComments(prev => 
+      prev.map(c => 
+        c.id === commentId 
+          ? { ...c, votes: c.votes + voteValue }
+          : c
+      )
+    );
+  };
+
+  const handleEditComment = (commentId: string, newContent: string) => {
+    setComments(prev => 
+      prev.map(c => 
+        c.id === commentId 
+          ? { ...c, content: newContent }
+          : c
+      )
+    );
+  };
+
+  const handleDeleteComment = (commentId: string) => {
+    setComments(prev => prev.filter(c => c.id !== commentId));
+  };
+
+  const handleSubmitComment = (answerId: string, content: string) => {
+    if (!currentUser) return;
+
+    const newComment: Comment = {
       id: Date.now().toString(),
-      questionId: selectedQuestionId,
+      answerId,
       content,
       authorId: currentUser.id,
       author: currentUser,
       createdAt: new Date(),
-      votes: 0,
-      isAccepted: false
+      votes: 0
     };
 
-    setAnswers(prev => [...prev, newAnswer]);
-    
-    // Update question answer count
-    setQuestions(prev => 
-      prev.map(q => 
-        q.id === selectedQuestionId
-          ? { ...q, answerCount: q.answerCount + 1 }
-          : q
-      )
-    );
+    setComments(prev => [...prev, newComment]);
 
-    // Create notification for question author
-    const question = questions.find(q => q.id === selectedQuestionId);
-    if (question && question.authorId !== currentUser.id) {
+    // Create notification for answer author
+    const answer = answers.find(a => a.id === answerId);
+    if (answer && answer.authorId !== currentUser.id) {
+      const question = questions.find(q => q.id === answer.questionId);
       const newNotification: Notification = {
         id: Date.now().toString(),
-        userId: question.authorId,
-        type: 'answer',
-        message: `${currentUser.username} answered your question "${question.title}"`,
-        questionId: selectedQuestionId,
-        answerId: newAnswer.id,
+        userId: answer.authorId,
+        type: 'comment',
+        message: `${currentUser.username} commented on your answer about "${question?.title}"`,
+        questionId: answer.questionId,
+        answerId: answerId,
+        commentId: newComment.id,
         createdAt: new Date(),
         read: false
       };
       setNotifications(prev => [...prev, newNotification]);
     }
-  };
-
-  const handleSubmitQuestion = (title: string, description: string, tagIds: string[]) => {
-    if (!currentUser) return;
-
-    const selectedTags = tags.filter(tag => tagIds.includes(tag.id));
-    
-    const newQuestion: Question = {
-      id: Date.now().toString(),
-      title,
-      description,
-      tags: selectedTags,
-      authorId: currentUser.id,
-      author: currentUser,
-      createdAt: new Date(),
-      votes: 0,
-      answerCount: 0,
-      views: 0
-    };
-
-    setQuestions(prev => [newQuestion, ...prev]);
-    setCurrentView('list');
   };
 
   const selectedQuestion = selectedQuestionId 
@@ -174,6 +226,12 @@ function App() {
         onMarkNotificationRead={handleMarkNotificationRead}
       />
 
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onLoginSuccess={handleLoginSuccess}
+      />
+
       {currentView === 'list' && (
         <QuestionList
           questions={questions}
@@ -183,6 +241,7 @@ function App() {
           onAskQuestion={() => setCurrentView('ask')}
           onTagFilter={setSelectedTag}
           selectedTag={selectedTag}
+          loading={loading}
         />
       )}
 
@@ -190,10 +249,15 @@ function App() {
         <QuestionDetail
           question={selectedQuestion}
           answers={questionAnswers}
+          comments={comments}
           currentUser={currentUser}
           onVote={handleVote}
           onAcceptAnswer={handleAcceptAnswer}
           onSubmitAnswer={handleSubmitAnswer}
+          onCommentVote={handleCommentVote}
+          onEditComment={handleEditComment}
+          onDeleteComment={handleDeleteComment}
+          onSubmitComment={handleSubmitComment}
           onBack={() => setCurrentView('list')}
         />
       )}
