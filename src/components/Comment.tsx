@@ -39,7 +39,7 @@ const Comment: React.FC<CommentProps> = ({
   const canDelete = currentUser?.id === comment.authorId;
 
   return (
-    <div className="bg-gray-50 rounded-lg p-3 sm:p-4 border border-gray-200">
+    <div id={`comment-${comment.id}`} className="bg-gray-50 rounded-lg p-3 sm:p-4 border border-gray-200">
       <div className="flex items-start space-x-2 sm:space-x-3">
         {/* Voting */}
         <CommentVoteButtons

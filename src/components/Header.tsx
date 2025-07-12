@@ -10,6 +10,7 @@ interface HeaderProps {
   onLogout: () => void;
   onSearch: (query: string) => void;
   onMarkNotificationRead: (id: string) => void;
+  onNavigateToNotification: (notification: Notification) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
@@ -18,7 +19,8 @@ const Header: React.FC<HeaderProps> = ({
   onLogin, 
   onLogout,
   onSearch,
-  onMarkNotificationRead
+  onMarkNotificationRead,
+  onNavigateToNotification
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -94,6 +96,7 @@ const Header: React.FC<HeaderProps> = ({
                       notifications={notifications}
                       onClose={() => setShowNotifications(false)}
                       onMarkRead={onMarkNotificationRead}
+                      onNavigateToNotification={onNavigateToNotification}
                     />
                   )}
                 </div>
@@ -264,6 +267,7 @@ const Header: React.FC<HeaderProps> = ({
               notifications={notifications}
               onClose={() => setShowNotifications(false)}
               onMarkRead={onMarkNotificationRead}
+              onNavigateToNotification={onNavigateToNotification}
             />
           </div>
         )}

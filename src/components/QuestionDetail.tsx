@@ -220,7 +220,7 @@ const QuestionDetail: React.FC<QuestionDetailProps> = ({
       {/* Answers */}
       <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
         {sortedAnswers.map((answer) => (
-          <div key={answer.id} className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
+          <div key={answer.id} id={`answer-${answer.id}`} className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
             <div className="flex items-start space-x-3">
               {/* Voting and Accept - Left side like Reddit */}
               <div className="flex flex-col items-center space-y-1 flex-shrink-0">

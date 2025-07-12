@@ -104,6 +104,48 @@ function App() {
     }
   };
 
+  const handleNavigateToNotification = (notification: Notification) => {
+    // Navigate to the question detail view
+    if (notification.questionId) {
+      setSelectedQuestionId(notification.questionId);
+      setCurrentView('detail');
+      
+      // Load the question data if not already loaded
+      const question = questions.find(q => q.id === notification.questionId);
+      if (!question) {
+        loadQuestions();
+      }
+      
+      // Load answers and comments
+      loadAnswers(notification.questionId).then(() => {
+        // After loading, scroll to the specific comment or answer
+        setTimeout(() => {
+          if (notification.commentId) {
+            // Scroll to comment
+            const commentElement = document.getElementById(`comment-${notification.commentId}`);
+            if (commentElement) {
+              commentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              commentElement.classList.add('bg-yellow-50', 'border-l-4', 'border-yellow-400');
+              setTimeout(() => {
+                commentElement.classList.remove('bg-yellow-50', 'border-l-4', 'border-yellow-400');
+              }, 3000);
+            }
+          } else if (notification.answerId) {
+            // Scroll to answer
+            const answerElement = document.getElementById(`answer-${notification.answerId}`);
+            if (answerElement) {
+              answerElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              answerElement.classList.add('bg-yellow-50', 'border-l-4', 'border-yellow-400');
+              setTimeout(() => {
+                answerElement.classList.remove('bg-yellow-50', 'border-l-4', 'border-yellow-400');
+              }, 3000);
+            }
+          }
+        }, 1000); // Wait for content to load
+      });
+    }
+  };
+
   const handleQuestionClick = async (questionId: string) => {
     if (!questionId) return; // Don't proceed if questionId is invalid
     
@@ -278,6 +320,7 @@ function App() {
         onLogout={handleLogout}
         onSearch={handleSearch}
         onMarkNotificationRead={handleMarkNotificationRead}
+        onNavigateToNotification={handleNavigateToNotification}
       />
 
       <LoginModal

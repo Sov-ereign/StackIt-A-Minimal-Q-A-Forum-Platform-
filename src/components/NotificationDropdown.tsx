@@ -7,12 +7,14 @@ interface NotificationDropdownProps {
   notifications: Notification[];
   onClose: () => void;
   onMarkRead: (id: string) => void;
+  onNavigateToNotification: (notification: Notification) => void;
 }
 
 const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
   notifications,
   onClose,
-  onMarkRead
+  onMarkRead,
+  onNavigateToNotification
 }) => {
   const getIcon = (type: string) => {
     switch (type) {
@@ -56,6 +58,8 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                 if (!notification.read) {
                   onMarkRead(notification.id);
                 }
+                onNavigateToNotification(notification);
+                onClose();
               }}
             >
               <div className="flex items-start space-x-2 sm:space-x-3">
