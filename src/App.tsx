@@ -168,12 +168,15 @@ function App() {
       const allComments: Comment[] = [];
       for (const answer of answersData) {
         try {
+          console.log('Loading comments for answer:', answer.id);
           const commentsData = await commentsAPI.getByAnswer(answer.id);
+          console.log('Comments loaded for answer:', answer.id, commentsData);
           allComments.push(...commentsData);
         } catch (error) {
           console.error(`Failed to load comments for answer ${answer.id}:`, error);
         }
       }
+      console.log('All comments loaded:', allComments);
       setComments(allComments);
     } catch (error) {
       console.error('Failed to load answers:', error);

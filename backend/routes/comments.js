@@ -13,7 +13,30 @@ router.get('/:answerId', async (req, res) => {
     const comments = await Comment.find({ answer: req.params.answerId })
       .populate('author', 'username reputation avatar')
       .sort({ createdAt: 1 });
-    res.json(comments);
+    
+    // Transform MongoDB _id to id for frontend compatibility
+    const transformedComments = comments.map(comment => {
+      const commentObj = comment.toObject();
+      return {
+        ...commentObj,
+        id: commentObj._id,
+        answerId: commentObj.answer,
+        author: commentObj.author ? {
+          ...commentObj.author,
+          id: commentObj.author._id,
+          username: commentObj.author.username || 'Unknown User',
+          reputation: commentObj.author.reputation || 0,
+          avatar: commentObj.author.avatar || null
+        } : {
+          id: 'unknown',
+          username: 'Unknown User',
+          reputation: 0,
+          avatar: null
+        }
+      };
+    });
+    
+    res.json(transformedComments);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -100,8 +123,28 @@ router.post('/:answerId', auth, async (req, res) => {
     // Populate author info for response
     await comment.populate('author', 'username reputation avatar');
     
-    console.log('Comment saved successfully:', comment);
-    res.status(201).json(comment);
+    // Transform the response to include id field
+    const commentObj = comment.toObject();
+    const transformedComment = {
+      ...commentObj,
+      id: commentObj._id,
+      answerId: commentObj.answer,
+      author: commentObj.author ? {
+        ...commentObj.author,
+        id: commentObj.author._id,
+        username: commentObj.author.username || 'Unknown User',
+        reputation: commentObj.author.reputation || 0,
+        avatar: commentObj.author.avatar || null
+      } : {
+        id: 'unknown',
+        username: 'Unknown User',
+        reputation: 0,
+        avatar: null
+      }
+    };
+    
+    console.log('Comment saved successfully:', transformedComment);
+    res.status(201).json(transformedComment);
   } catch (err) {
     console.error('Error creating comment:', err);
     res.status(500).json({ message: 'Server error' });
@@ -129,7 +172,28 @@ router.put('/:commentId', auth, async (req, res) => {
     await comment.save();
     
     await comment.populate('author', 'username reputation avatar');
-    res.json(comment);
+    
+    // Transform the response to include id field
+    const commentObj = comment.toObject();
+    const transformedComment = {
+      ...commentObj,
+      id: commentObj._id,
+      answerId: commentObj.answer,
+      author: commentObj.author ? {
+        ...commentObj.author,
+        id: commentObj.author._id,
+        username: commentObj.author.username || 'Unknown User',
+        reputation: commentObj.author.reputation || 0,
+        avatar: commentObj.author.avatar || null
+      } : {
+        id: 'unknown',
+        username: 'Unknown User',
+        reputation: 0,
+        avatar: null
+      }
+    };
+    
+    res.json(transformedComment);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
