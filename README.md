@@ -29,7 +29,7 @@ community.
 ## 🎬 Demo
 
 <div align="center">
-  <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank">
+  <a href="https://youtu.be/vqejmBavZjM" target="_blank">
     <img src="https://img.shields.io/badge/🎥_Watch_Demo-FF0000?style=for-the-badge&logo=youtube&logoColor=white&labelColor=FF0000" alt="Demo Video" />
   </a>
 </div>
