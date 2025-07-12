@@ -17,8 +17,16 @@ router.get('/', async (req, res) => {
         id: questionObj._id,
         author: questionObj.author ? {
           ...questionObj.author,
-          id: questionObj.author._id
-        } : null
+          id: questionObj.author._id,
+          username: questionObj.author.username || 'Unknown User',
+          reputation: questionObj.author.reputation || 0,
+          avatar: questionObj.author.avatar || null
+        } : {
+          id: 'unknown',
+          username: 'Unknown User',
+          reputation: 0,
+          avatar: null
+        }
       };
     });
     

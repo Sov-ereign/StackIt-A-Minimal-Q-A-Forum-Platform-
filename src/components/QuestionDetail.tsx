@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { ChevronUp, ChevronDown, MessageCircle, Check, ArrowLeft, Flag } from 'lucide-react';
+import { MessageCircle, Check, ArrowLeft, Flag } from 'lucide-react';
 import { Question, Answer, User, Comment } from '../types';
 import RichTextEditor from './RichTextEditor';
 import CommentList from './CommentList';
+import VoteButtons from './VoteButtons';
+import ReportModal from './ReportModal';
 
 interface QuestionDetailProps {
   question: Question;
   answers: Answer[];
   comments: Comment[];
   currentUser: User | null;
-  onVote: (targetId: string, targetType: 'question' | 'answer', voteType: 'up' | 'down') => void;
+  onVoteChange: (targetId: string, targetType: 'question' | 'answer', newVoteCount: number) => void;
   onAcceptAnswer: (answerId: string) => void;
   onSubmitAnswer: (content: string) => void;
   onCommentVote: (commentId: string, voteType: 'up' | 'down') => void;
@@ -25,7 +27,7 @@ const QuestionDetail: React.FC<QuestionDetailProps> = ({
   answers,
   comments,
   currentUser,
-  onVote,
+  onVoteChange,
   onAcceptAnswer,
   onSubmitAnswer,
   onCommentVote,
@@ -36,6 +38,12 @@ const QuestionDetail: React.FC<QuestionDetailProps> = ({
 }) => {
   const [answerContent, setAnswerContent] = useState('');
   const [showAnswerForm, setShowAnswerForm] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportTarget, setReportTarget] = useState<{
+    id: string;
+    type: 'question' | 'answer' | 'comment';
+    title?: string;
+  } | null>(null);
 
   const handleSubmitAnswer = () => {
     if (answerContent.trim()) {
@@ -43,6 +51,17 @@ const QuestionDetail: React.FC<QuestionDetailProps> = ({
       setAnswerContent('');
       setShowAnswerForm(false);
     }
+  };
+
+  const handleReport = (targetId: string, targetType: 'question' | 'answer' | 'comment', title?: string) => {
+    if (!currentUser) return;
+    setReportTarget({ id: targetId, type: targetType, title });
+    setShowReportModal(true);
+  };
+
+  const handleCloseReportModal = () => {
+    setShowReportModal(false);
+    setReportTarget(null);
   };
 
   const sortedAnswers = [...answers].sort((a, b) => {
@@ -67,23 +86,14 @@ const QuestionDetail: React.FC<QuestionDetailProps> = ({
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
         <div className="flex items-start space-x-6">
           {/* Voting */}
-          <div className="flex flex-col items-center space-y-2">
-            <button
-              onClick={() => onVote(question.id, 'question', 'up')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              disabled={!currentUser}
-            >
-              <ChevronUp className="h-6 w-6 text-gray-600" />
-            </button>
-            <span className="text-lg font-semibold text-gray-900">{question.votes}</span>
-            <button
-              onClick={() => onVote(question.id, 'question', 'down')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              disabled={!currentUser}
-            >
-              <ChevronDown className="h-6 w-6 text-gray-600" />
-            </button>
-          </div>
+          <VoteButtons
+            targetId={question.id}
+            targetType="question"
+            currentVotes={question.votes}
+            currentUser={currentUser}
+            onVoteChange={(newVoteCount) => onVoteChange(question.id, 'question', newVoteCount)}
+            size="lg"
+          />
 
           {/* Content */}
           <div className="flex-1">
@@ -96,41 +106,49 @@ const QuestionDetail: React.FC<QuestionDetailProps> = ({
 
             {/* Tags */}
             <div className="flex flex-wrap gap-2 mb-4">
-              {question.tags.map((tag) => (
-                <span
-                  key={tag.id}
-                  className="px-3 py-1 text-sm font-medium rounded-md"
-                  style={{ 
-                    backgroundColor: `${tag.color}20`, 
-                    color: tag.color 
-                  }}
-                >
-                  {tag.name}
-                </span>
-              ))}
+              {question.tags && question.tags.length > 0 ? (
+                question.tags.map((tag) => (
+                  <span
+                    key={typeof tag === 'string' ? tag : tag.id}
+                    className="px-3 py-1 text-sm font-medium rounded-md"
+                    style={{ 
+                      backgroundColor: typeof tag === 'string' ? '#e5e7eb' : `${tag.color}20`, 
+                      color: typeof tag === 'string' ? '#374151' : tag.color
+                    }}
+                  >
+                    {typeof tag === 'string' ? tag : tag.name}
+                  </span>
+                ))
+              ) : (
+                <span className="text-sm text-gray-500">No tags</span>
+              )}
             </div>
 
             {/* Author and Actions */}
             <div className="flex items-center justify-between pt-4 border-t border-gray-200">
               <div className="flex items-center space-x-3">
-                {question.author.avatar ? (
+                {question.author && question.author.avatar ? (
                   <img
                     src={question.author.avatar}
-                    alt={question.author.username}
+                    alt={question.author.username || 'User'}
                     className="h-8 w-8 rounded-full object-cover"
                   />
                 ) : (
                   <div className="h-8 w-8 bg-gray-300 rounded-full"></div>
                 )}
                 <div>
-                  <p className="font-medium text-gray-900">{question.author.username}</p>
+                  <p className="font-medium text-gray-900">{question.author?.username || 'Unknown User'}</p>
                   <p className="text-sm text-gray-500">
-                    {question.author.reputation} reputation • {formatDistanceToNow(question.createdAt, { addSuffix: true })}
+                    {question.author?.reputation || 0} reputation • {formatDistanceToNow(new Date(question.createdAt), { addSuffix: true })}
                   </p>
                 </div>
               </div>
               
-              <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg">
+              <button 
+                onClick={() => handleReport(question.id, 'question', question.title)}
+                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg"
+                title="Report this question"
+              >
                 <Flag className="h-4 w-4" />
               </button>
             </div>
@@ -152,21 +170,14 @@ const QuestionDetail: React.FC<QuestionDetailProps> = ({
             <div className="flex items-start space-x-6">
               {/* Voting and Accept */}
               <div className="flex flex-col items-center space-y-2">
-                <button
-                  onClick={() => onVote(answer.id, 'answer', 'up')}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  disabled={!currentUser}
-                >
-                  <ChevronUp className="h-5 w-5 text-gray-600" />
-                </button>
-                <span className="text-lg font-semibold text-gray-900">{answer.votes}</span>
-                <button
-                  onClick={() => onVote(answer.id, 'answer', 'down')}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  disabled={!currentUser}
-                >
-                  <ChevronDown className="h-5 w-5 text-gray-600" />
-                </button>
+                <VoteButtons
+                  targetId={answer.id}
+                  targetType="answer"
+                  currentVotes={answer.votes}
+                  currentUser={currentUser}
+                  onVoteChange={(newVoteCount) => onVoteChange(answer.id, 'answer', newVoteCount)}
+                  size="md"
+                />
                 
                 {currentUser?.id === question.authorId && !question.acceptedAnswerId && (
                   <button
@@ -201,24 +212,28 @@ const QuestionDetail: React.FC<QuestionDetailProps> = ({
                 {/* Author */}
                 <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                   <div className="flex items-center space-x-3">
-                    {answer.author.avatar ? (
+                    {answer.author && answer.author.avatar ? (
                       <img
                         src={answer.author.avatar}
-                        alt={answer.author.username}
+                        alt={answer.author.username || 'User'}
                         className="h-8 w-8 rounded-full object-cover"
                       />
                     ) : (
                       <div className="h-8 w-8 bg-gray-300 rounded-full"></div>
                     )}
                     <div>
-                      <p className="font-medium text-gray-900">{answer.author.username}</p>
+                      <p className="font-medium text-gray-900">{answer.author?.username || 'Unknown User'}</p>
                       <p className="text-sm text-gray-500">
-                        {answer.author.reputation} reputation • {formatDistanceToNow(answer.createdAt, { addSuffix: true })}
+                        {answer.author?.reputation || 0} reputation • {formatDistanceToNow(new Date(answer.createdAt), { addSuffix: true })}
                       </p>
                     </div>
                   </div>
                   
-                  <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg">
+                  <button 
+                    onClick={() => handleReport(answer.id, 'answer', answer.content.substring(0, 50) + '...')}
+                    className="p-2 text-gray-400 hover:text-gray-600 rounded-lg"
+                    title="Report this answer"
+                  >
                     <Flag className="h-4 w-4" />
                   </button>
                 </div>
@@ -289,6 +304,17 @@ const QuestionDetail: React.FC<QuestionDetailProps> = ({
             Sign In
           </button>
         </div>
+      )}
+
+      {/* Report Modal */}
+      {showReportModal && reportTarget && (
+        <ReportModal
+          isOpen={showReportModal}
+          onClose={handleCloseReportModal}
+          targetId={reportTarget.id}
+          targetType={reportTarget.type}
+          targetTitle={reportTarget.title}
+        />
       )}
     </div>
   );

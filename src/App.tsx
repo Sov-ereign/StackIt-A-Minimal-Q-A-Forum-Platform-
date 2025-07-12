@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { User, Question, Answer, Tag, Notification, Comment } from './types';
 import { tags, notifications as initialNotifications, comments as initialComments } from './data/mockData';
-import { authAPI, questionsAPI, answersAPI, votesAPI } from './services/api';
+import { authAPI, questionsAPI, answersAPI, votesAPI, reportsAPI } from './services/api';
 import Header from './components/Header';
 import QuestionList from './components/QuestionList';
 import QuestionDetail from './components/QuestionDetail';
 import AskQuestion from './components/AskQuestion';
 import LoginModal from './components/LoginModal';
+import ErrorBoundary from './components/ErrorBoundary';
 
 type View = 'list' | 'detail' | 'ask';
 
@@ -86,18 +87,19 @@ function App() {
     await loadAnswers(questionId);
   };
 
-  const handleVote = async (targetId: string, targetType: 'question' | 'answer', voteType: 'up' | 'down') => {
-    if (!currentUser) return;
-
-    try {
-      await votesAPI.vote(targetId, targetType, voteType);
-      // Reload questions to get updated vote counts
-      await loadQuestions();
-      if (selectedQuestionId) {
-        await loadAnswers(selectedQuestionId);
-      }
-    } catch (error) {
-      console.error('Failed to vote:', error);
+  const handleVoteChange = (targetId: string, targetType: 'question' | 'answer', newVoteCount: number) => {
+    if (targetType === 'question') {
+      setQuestions(prev => 
+        prev.map(q => 
+          q.id === targetId ? { ...q, votes: newVoteCount } : q
+        )
+      );
+    } else {
+      setAnswers(prev => 
+        prev.map(a => 
+          a.id === targetId ? { ...a, votes: newVoteCount } : a
+        )
+      );
     }
   };
 
@@ -170,13 +172,12 @@ function App() {
   // Comment handlers
   const handleCommentVote = (commentId: string, voteType: 'up' | 'down') => {
     if (!currentUser) return;
-
-    const voteValue = voteType === 'up' ? 1 : -1;
     
+    // For comments, we'll just update the local state since there's no backend vote system yet
     setComments(prev => 
       prev.map(c => 
         c.id === commentId 
-          ? { ...c, votes: c.votes + voteValue }
+          ? { ...c, votes: c.votes + (voteType === 'up' ? 1 : -1) }
           : c
       )
     );
@@ -269,12 +270,13 @@ function App() {
       )}
 
       {currentView === 'detail' && selectedQuestion && selectedQuestionId && (
-        <QuestionDetail
+        <ErrorBoundary>
+                  <QuestionDetail
           question={selectedQuestion}
           answers={questionAnswers}
           comments={comments}
           currentUser={currentUser}
-          onVote={handleVote}
+          onVoteChange={handleVoteChange}
           onAcceptAnswer={handleAcceptAnswer}
           onSubmitAnswer={handleSubmitAnswer}
           onCommentVote={handleCommentVote}
@@ -283,6 +285,7 @@ function App() {
           onSubmitComment={handleSubmitComment}
           onBack={() => setCurrentView('list')}
         />
+        </ErrorBoundary>
       )}
 
       {currentView === 'detail' && !selectedQuestion && (

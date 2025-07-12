@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { ChevronUp, ChevronDown, MessageCircle, Edit, Trash2, Flag } from 'lucide-react';
+import { Edit, Trash2, Flag } from 'lucide-react';
 import { Comment as CommentType, User } from '../types';
 import RichTextEditor from './RichTextEditor';
+import CommentVoteButtons from './CommentVoteButtons';
 
 interface CommentProps {
   comment: CommentType;
@@ -41,23 +42,12 @@ const Comment: React.FC<CommentProps> = ({
     <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
       <div className="flex items-start space-x-3">
         {/* Voting */}
-        <div className="flex flex-col items-center space-y-1">
-          <button
-            onClick={() => onVote(comment.id, 'up')}
-            className="p-1 hover:bg-gray-200 rounded transition-colors"
-            disabled={!currentUser}
-          >
-            <ChevronUp className="h-4 w-4 text-gray-600" />
-          </button>
-          <span className="text-sm font-medium text-gray-900">{comment.votes}</span>
-          <button
-            onClick={() => onVote(comment.id, 'down')}
-            className="p-1 hover:bg-gray-200 rounded transition-colors"
-            disabled={!currentUser}
-          >
-            <ChevronDown className="h-4 w-4 text-gray-600" />
-          </button>
-        </div>
+        <CommentVoteButtons
+          commentId={comment.id}
+          currentVotes={comment.votes}
+          currentUser={currentUser}
+          onVote={onVote}
+        />
 
         {/* Content */}
         <div className="flex-1 min-w-0">
@@ -94,7 +84,7 @@ const Comment: React.FC<CommentProps> = ({
           {/* Author and Actions */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              {comment.author.avatar ? (
+              {comment.author?.avatar ? (
                 <img
                   src={comment.author.avatar}
                   alt={comment.author.username}
@@ -104,9 +94,9 @@ const Comment: React.FC<CommentProps> = ({
                 <div className="h-6 w-6 bg-gray-300 rounded-full"></div>
               )}
               <div>
-                <p className="text-sm font-medium text-gray-900">{comment.author.username}</p>
+                <p className="text-sm font-medium text-gray-900">{comment.author?.username || 'Unknown User'}</p>
                 <p className="text-xs text-gray-500">
-                  {comment.author.reputation} reputation • {formatDistanceToNow(comment.createdAt, { addSuffix: true })}
+                  {comment.author?.reputation || 0} reputation • {formatDistanceToNow(comment.createdAt, { addSuffix: true })}
                 </p>
               </div>
             </div>

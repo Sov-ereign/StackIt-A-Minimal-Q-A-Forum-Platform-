@@ -8,10 +8,6 @@ const userSchema = new mongoose.Schema({
   role: { type: String, enum: ['guest', 'user', 'admin'], default: 'user' },
   avatar: { type: String },
   reputation: { type: Number, default: 0 },
-  status: { type: String, enum: ['active', 'suspended', 'banned'], default: 'active' },
-  suspendedUntil: { type: Date },
-  suspensionReason: { type: String },
-  isQuestionOwner: { type: Boolean, default: false }, // Special flag for question owners
 }, { timestamps: true });
 
 userSchema.pre('save', async function (next) {

@@ -5,37 +5,19 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
-// Get all comments for an answer (public) - only approved comments
+// Get all comments for an answer (public)
 router.get('/:answerId', async (req, res) => {
   try {
-    const comments = await Comment.find({ 
-      answer: req.params.answerId,
-      isApproved: true,
-      isRemoved: false
-    }).populate('author', 'username reputation avatar')
+    const comments = await Comment.find({ answer: req.params.answerId })
+      .populate('author', 'username reputation avatar')
       .sort({ createdAt: 1 });
-    
-    // Transform data for frontend
-    const transformedComments = comments.map(comment => {
-      const commentObj = comment.toObject();
-      return {
-        ...commentObj,
-        id: commentObj._id,
-        answerId: commentObj.answer,
-        author: commentObj.author ? {
-          ...commentObj.author,
-          id: commentObj.author._id
-        } : null
-      };
-    });
-    
-    res.json(transformedComments);
+    res.json(comments);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Post a new comment (auth required) - requires approval
+// Post a new comment (auth required)
 router.post('/:answerId', auth, async (req, res) => {
   try {
     const { content } = req.body;
@@ -47,7 +29,6 @@ router.post('/:answerId', auth, async (req, res) => {
       answer: req.params.answerId,
       content,
       author: req.user.id,
-      isApproved: false, // New comments need approval
     });
     
     await comment.save();
@@ -55,19 +36,7 @@ router.post('/:answerId', auth, async (req, res) => {
     // Populate author info for response
     await comment.populate('author', 'username reputation avatar');
     
-    // Transform data for frontend
-    const commentObj = comment.toObject();
-    const transformedComment = {
-      ...commentObj,
-      id: commentObj._id,
-      answerId: commentObj.answer,
-      author: commentObj.author ? {
-        ...commentObj.author,
-        id: commentObj.author._id
-      } : null
-    };
-    
-    res.status(201).json(transformedComment);
+    res.status(201).json(comment);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }

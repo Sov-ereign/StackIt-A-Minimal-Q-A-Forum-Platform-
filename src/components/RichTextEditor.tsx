@@ -30,7 +30,9 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
   const [linkText, setLinkText] = useState('');
+  const [currentAlignment, setCurrentAlignment] = useState<'left' | 'center' | 'right'>('left');
   const editorRef = useRef<HTMLDivElement>(null);
+  const [lastSelection, setLastSelection] = useState<{ start: number; end: number } | null>(null);
   const [cursorPosition, setCursorPosition] = useState<number>(0);
 
   const emojis = ['😊', '😂', '🤔', '👍', '👎', '❤️', '🎉', '🚀', '💡', '⚡', '🔥', '💯'];
@@ -94,6 +96,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   const setAlignment = (alignment: 'left' | 'center' | 'right') => {
     if (editorRef.current) {
+      setCurrentAlignment(alignment);
+      
       const selection = window.getSelection();
       if (selection && selection.rangeCount > 0) {
         const range = selection.getRangeAt(0);
@@ -107,15 +111,17 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         if (blockElement) {
           const element = blockElement as HTMLElement;
           
-          // Remove existing alignment classes
+          // Remove existing alignment styles
           element.style.textAlign = '';
-          element.classList.remove('text-left', 'text-center', 'text-right');
+          element.style.textAlignLast = '';
           
           // Set new alignment
           element.style.textAlign = alignment;
+          element.style.textAlignLast = alignment;
           
-          // Also set the alignment on the element itself
+          // Also ensure the element has the proper display property
           if (element.tagName === 'DIV' || element.tagName === 'P') {
+            element.style.display = 'block';
             element.style.textAlign = alignment;
           }
         }
@@ -123,7 +129,9 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         // No selection, apply to the entire content
         const blocks = editorRef.current.querySelectorAll('p, div, h1, h2, h3, h4, h5, h6');
         blocks.forEach(block => {
-          (block as HTMLElement).style.textAlign = alignment;
+          const element = block as HTMLElement;
+          element.style.textAlign = alignment;
+          element.style.textAlignLast = alignment;
         });
       }
       
@@ -307,7 +315,10 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     // Ensure cursor moves properly on arrow keys
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-      setTimeout(() => saveCursorPosition(), 0);
+      setTimeout(() => {
+        saveSelection();
+        detectCurrentAlignment();
+      }, 0);
     }
 
     // Handle Enter key in lists
@@ -317,22 +328,15 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         const range = selection.getRangeAt(0);
         let listItem = range.startContainer;
         
-        // Find the list item element
+        // Find the list item
         while (listItem && listItem.nodeType !== Node.ELEMENT_NODE) {
           listItem = listItem.parentNode;
         }
         
         if (listItem && (listItem as Element).tagName === 'LI') {
-          const listItemElement = listItem as HTMLLIElement;
-          const listContent = listItemElement.textContent || '';
-          
-          // If list item is empty, break out of list
-          if (listContent.trim() === '') {
-            e.preventDefault();
-            document.execCommand('outdent', false);
-            updateContent();
-            return;
-          }
+          // We're in a list item, create a new one
+          e.preventDefault();
+          document.execCommand('insertLineBreak', false);
         }
       }
     }
@@ -365,8 +369,39 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     }
   };
 
+  const detectCurrentAlignment = () => {
+    if (editorRef.current) {
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        
+        // Get the current block element
+        let blockElement = range.startContainer;
+        while (blockElement && blockElement.nodeType !== Node.ELEMENT_NODE) {
+          blockElement = blockElement.parentNode;
+        }
+        
+        if (blockElement) {
+          const element = blockElement as HTMLElement;
+          const textAlign = element.style.textAlign || getComputedStyle(element).textAlign;
+          
+          if (textAlign === 'center') {
+            setCurrentAlignment('center');
+          } else if (textAlign === 'right') {
+            setCurrentAlignment('right');
+          } else {
+            setCurrentAlignment('left');
+          }
+        }
+      }
+    }
+  };
+
   const handleClick = () => {
-    setTimeout(() => saveCursorPosition(), 0);
+    setTimeout(() => {
+      saveSelection();
+      detectCurrentAlignment();
+    }, 0);
   };
 
   const handleFocus = () => {
@@ -441,7 +476,11 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           type="button"
           onClick={() => setAlignment('left')}
-          className="p-2 hover:bg-gray-200 rounded transition-colors"
+          className={`p-2 rounded transition-colors ${
+            currentAlignment === 'left' 
+              ? 'bg-blue-200 text-blue-700' 
+              : 'hover:bg-gray-200'
+          }`}
           title="Align Left"
         >
           <AlignLeft className="h-4 w-4" />
@@ -450,7 +489,11 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           type="button"
           onClick={() => setAlignment('center')}
-          className="p-2 hover:bg-gray-200 rounded transition-colors"
+          className={`p-2 rounded transition-colors ${
+            currentAlignment === 'center' 
+              ? 'bg-blue-200 text-blue-700' 
+              : 'hover:bg-gray-200'
+          }`}
           title="Align Center"
         >
           <AlignCenter className="h-4 w-4" />
@@ -459,7 +502,11 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           type="button"
           onClick={() => setAlignment('right')}
-          className="p-2 hover:bg-gray-200 rounded transition-colors"
+          className={`p-2 rounded transition-colors ${
+            currentAlignment === 'right' 
+              ? 'bg-blue-200 text-blue-700' 
+              : 'hover:bg-gray-200'
+          }`}
           title="Align Right"
         >
           <AlignRight className="h-4 w-4" />
@@ -612,6 +659,33 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         
         [contenteditable] * {
           direction: ltr !important;
+        }
+
+        /* Text alignment styles */
+        [contenteditable] p,
+        [contenteditable] div,
+        [contenteditable] h1,
+        [contenteditable] h2,
+        [contenteditable] h3,
+        [contenteditable] h4,
+        [contenteditable] h5,
+        [contenteditable] h6 {
+          margin: 0.5em 0;
+          line-height: 1.6;
+        }
+
+        [contenteditable] p[style*="text-align: center"],
+        [contenteditable] div[style*="text-align: center"] {
+          text-align: center !important;
+        }
+
+        [contenteditable] p[style*="text-align: right"],
+        [contenteditable] div[style*="text-align: right"] {
+          text-align: right !important;
+        }
+
+        [contenteditable] p[style*="text-align: left"],
+        [contenteditable] div[style*="text-align: left"] {
           text-align: left !important;
         }
 

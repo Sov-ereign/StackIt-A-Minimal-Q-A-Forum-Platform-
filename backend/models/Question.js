@@ -11,11 +11,19 @@ const questionSchema = new mongoose.Schema({
   acceptedAnswerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Answer' },
   views: { type: Number, default: 0 },
   // Moderation fields
-  isApproved: { type: Boolean, default: true }, // Questions are auto-approved
-  isRemoved: { type: Boolean, default: false },
-  removedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  removedAt: { type: Date },
-  removalReason: { type: String },
+  status: { 
+    type: String, 
+    enum: ['pending', 'approved', 'rejected', 'flagged'], 
+    default: 'approved' 
+  },
+  moderatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  moderatedAt: { type: Date },
+  moderationReason: { type: String },
+  flags: [{
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    reason: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now }
+  }]
 });
 
 module.exports = mongoose.model('Question', questionSchema); 

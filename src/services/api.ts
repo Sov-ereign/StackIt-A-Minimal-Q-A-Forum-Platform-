@@ -109,4 +109,65 @@ export const votesAPI = {
       body: JSON.stringify({ targetId, targetType, type }),
     });
   },
+  
+  getUserVote: async (targetId: string, targetType: 'question' | 'answer') => {
+    return apiRequest(`/votes/${targetType}/${targetId}`);
+  },
+};
+
+// Reports API
+export const reportsAPI = {
+  report: async (targetId: string, targetType: 'question' | 'answer' | 'comment', reason: string, description?: string) => {
+    return apiRequest('/reports', {
+      method: 'POST',
+      body: JSON.stringify({ targetId, targetType, reason, description }),
+    });
+  },
+};
+
+// Admin API
+export const adminAPI = {
+  // Get moderation dashboard stats
+  getDashboard: async () => {
+    return apiRequest('/admin/dashboard');
+  },
+
+  // Get pending content for moderation
+  getPending: async (type: string = 'all', page: number = 1, limit: number = 20) => {
+    return apiRequest(`/admin/pending?type=${type}&page=${page}&limit=${limit}`);
+  },
+
+  // Get flagged content
+  getFlagged: async (type: string = 'all', page: number = 1, limit: number = 20) => {
+    return apiRequest(`/admin/flagged?type=${type}&page=${page}&limit=${limit}`);
+  },
+
+  // Moderate content (approve/reject)
+  moderate: async (contentType: string, contentId: string, action: 'approve' | 'reject', reason?: string) => {
+    return apiRequest(`/admin/moderate/${contentType}/${contentId}`, {
+      method: 'POST',
+      body: JSON.stringify({ action, reason }),
+    });
+  },
+
+  // Flag content
+  flag: async (contentType: string, contentId: string, reason: string) => {
+    return apiRequest(`/admin/flag/${contentType}/${contentId}`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    });
+  },
+
+  // Get all users
+  getUsers: async (page: number = 1, limit: number = 20, search: string = '') => {
+    return apiRequest(`/admin/users?page=${page}&limit=${limit}&search=${search}`);
+  },
+
+  // Update user role
+  updateUserRole: async (userId: string, role: string) => {
+    return apiRequest(`/admin/users/${userId}/role`, {
+      method: 'PUT',
+      body: JSON.stringify({ role }),
+    });
+  },
 }; 

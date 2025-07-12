@@ -5,10 +5,6 @@ export interface User {
   role: 'guest' | 'user' | 'admin';
   avatar?: string;
   reputation: number;
-  status: 'active' | 'suspended' | 'banned';
-  suspendedUntil?: Date;
-  suspensionReason?: string;
-  isQuestionOwner: boolean;
 }
 
 export interface Tag {
@@ -23,17 +19,12 @@ export interface Question {
   description: string;
   tags: Tag[];
   authorId: string;
-  author: User;
+  author: User | null;
   createdAt: Date;
   votes: number;
   answerCount: number;
   acceptedAnswerId?: string;
   views: number;
-  isApproved: boolean;
-  isRemoved: boolean;
-  removedBy?: string;
-  removedAt?: Date;
-  removalReason?: string;
 }
 
 export interface Answer {
@@ -41,15 +32,10 @@ export interface Answer {
   questionId: string;
   content: string;
   authorId: string;
-  author: User;
+  author: User | null;
   createdAt: Date;
   votes: number;
   isAccepted: boolean;
-  isApproved: boolean;
-  isRemoved: boolean;
-  removedBy?: string;
-  removedAt?: Date;
-  removalReason?: string;
 }
 
 export interface Comment {
@@ -57,31 +43,9 @@ export interface Comment {
   answerId: string;
   content: string;
   authorId: string;
-  author: User;
+  author: User | null;
   createdAt: Date;
   votes: number;
-  isApproved: boolean;
-  isRemoved: boolean;
-  removedBy?: string;
-  removedAt?: Date;
-  removalReason?: string;
-}
-
-export interface Report {
-  id: string;
-  reporterId: string;
-  reporter: User;
-  targetType: 'question' | 'answer' | 'comment';
-  targetId: string;
-  reason: string;
-  description?: string;
-  status: 'pending' | 'reviewed' | 'resolved';
-  adminAction?: 'approved' | 'rejected' | 'removed' | 'user_suspended';
-  adminNotes?: string;
-  reviewedBy?: string;
-  reviewedByUser?: User;
-  reviewedAt?: Date;
-  createdAt: Date;
 }
 
 export interface Notification {
@@ -102,17 +66,4 @@ export interface Vote {
   targetId: string;
   targetType: 'question' | 'answer';
   type: 'up' | 'down';
-}
-
-export interface AdminStats {
-  totalUsers: number;
-  activeUsers: number;
-  suspendedUsers: number;
-  bannedUsers: number;
-  pendingAnswers: number;
-  pendingComments: number;
-  pendingReports: number;
-  totalQuestions: number;
-  totalAnswers: number;
-  totalComments: number;
 }

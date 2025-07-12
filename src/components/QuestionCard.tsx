@@ -61,7 +61,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question, onClick }) => {
           {/* Author and Date */}
           <div className="flex items-center justify-between mt-4">
             <div className="flex items-center space-x-2">
-              {question.author.avatar ? (
+              {question.author?.avatar ? (
                 <img
                   src={question.author.avatar}
                   alt={question.author.username}
@@ -70,9 +70,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question, onClick }) => {
               ) : (
                 <div className="h-6 w-6 bg-gray-300 rounded-full"></div>
               )}
-              <span className="text-sm text-gray-600">{question.author.username}</span>
+              <span className="text-sm text-gray-600">{question.author?.username || 'Unknown User'}</span>
               <span className="text-xs text-gray-400">
-                {question.author.reputation} rep
+                {question.author?.reputation || 0} rep
               </span>
             </div>
             <span className="text-sm text-gray-500">
