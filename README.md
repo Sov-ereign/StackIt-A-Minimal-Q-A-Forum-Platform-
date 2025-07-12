@@ -62,7 +62,7 @@ community.
 - Title (short, descriptive)
 - Description written using a *rich text editor*
 
----
+
 
 ### 📝 Rich Text Editor Functionalities
 - Bold, Italic, Strikethrough formatting
@@ -78,18 +78,17 @@ community.
 - Only logged-in users can post answers
 - Answers use the same rich text editor
 
----
+
 
 ### 📊 Voting & Answer Acceptance
 - Upvote/downvote answers
 - Question owner can mark one answer as accepted
 
----
+
 
 ### 🏷 Tagging System
 - Multi-select input (e.g., React, JWT)
 
----
 
 ### 🔔 Notification System
 - Notification bell icon in top navbar
@@ -100,7 +99,7 @@ community.
 - Unread notification count
 - Dropdown view for recent notifications
 
----
+
 
 ### 🔐 Admin Features
 - Reject inappropriate/spammy content
