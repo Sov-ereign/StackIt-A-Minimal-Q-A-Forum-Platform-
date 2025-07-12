@@ -158,6 +158,58 @@ const QuestionDetail: React.FC<QuestionDetailProps> = ({
         </div>
       </div>
 
+      {/* Answer Form - Moved to top */}
+      {currentUser ? (
+        <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 mb-4 sm:mb-6">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Your Answer</h3>
+          
+          {!showAnswerForm ? (
+            <button
+              onClick={() => setShowAnswerForm(true)}
+              className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors text-gray-600 hover:text-blue-600"
+            >
+              <MessageCircle className="h-6 w-6 mx-auto mb-2" />
+              <span className="text-sm sm:text-base">Write an answer...</span>
+            </button>
+          ) : (
+            <div>
+              <RichTextEditor
+                value={answerContent}
+                onChange={setAnswerContent}
+                placeholder="Share your knowledge..."
+                className="mb-4"
+              />
+              
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+                <button
+                  onClick={handleSubmitAnswer}
+                  disabled={!answerContent.trim()}
+                  className="bg-blue-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm sm:text-base"
+                >
+                  Post Answer
+                </button>
+                <button
+                  onClick={() => {
+                    setShowAnswerForm(false);
+                    setAnswerContent('');
+                  }}
+                  className="px-4 sm:px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm sm:text-base"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 sm:p-6 mb-4 sm:mb-6 text-center">
+          <p className="text-gray-600 mb-4 text-sm sm:text-base">You must be logged in to answer this question.</p>
+          <button className="bg-blue-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base">
+            Sign In
+          </button>
+        </div>
+      )}
+
       {/* Answers Header */}
       <div className="flex items-center justify-between mb-4 sm:mb-6">
         <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
@@ -213,7 +265,7 @@ const QuestionDetail: React.FC<QuestionDetailProps> = ({
 
                 {/* Author */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pt-3 sm:pt-4 border-t border-gray-200 space-y-2 sm:space-y-0">
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2 sm:space-x-3">
                     {answer.author && answer.author.avatar ? (
                       <img
                         src={answer.author.avatar}
@@ -255,58 +307,6 @@ const QuestionDetail: React.FC<QuestionDetailProps> = ({
           </div>
         ))}
       </div>
-
-      {/* Answer Form */}
-      {currentUser ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
-          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Your Answer</h3>
-          
-          {!showAnswerForm ? (
-            <button
-              onClick={() => setShowAnswerForm(true)}
-              className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors text-gray-600 hover:text-blue-600"
-            >
-              <MessageCircle className="h-6 w-6 mx-auto mb-2" />
-              <span className="text-sm sm:text-base">Write an answer...</span>
-            </button>
-          ) : (
-            <div>
-              <RichTextEditor
-                value={answerContent}
-                onChange={setAnswerContent}
-                placeholder="Share your knowledge..."
-                className="mb-4"
-              />
-              
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
-                <button
-                  onClick={handleSubmitAnswer}
-                  disabled={!answerContent.trim()}
-                  className="bg-blue-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm sm:text-base"
-                >
-                  Post Answer
-                </button>
-                <button
-                  onClick={() => {
-                    setShowAnswerForm(false);
-                    setAnswerContent('');
-                  }}
-                  className="px-4 sm:px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm sm:text-base"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 sm:p-6 text-center">
-          <p className="text-gray-600 mb-4 text-sm sm:text-base">You must be logged in to answer this question.</p>
-          <button className="bg-blue-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base">
-            Sign In
-          </button>
-        </div>
-      )}
 
       {/* Report Modal */}
       {showReportModal && reportTarget && (

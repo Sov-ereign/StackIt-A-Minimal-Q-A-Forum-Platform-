@@ -163,6 +163,18 @@ function App() {
     try {
       const answersData = await answersAPI.getByQuestion(questionId);
       setAnswers(answersData);
+      
+      // Load comments for all answers
+      const allComments: Comment[] = [];
+      for (const answer of answersData) {
+        try {
+          const commentsData = await commentsAPI.getByAnswer(answer.id);
+          allComments.push(...commentsData);
+        } catch (error) {
+          console.error(`Failed to load comments for answer ${answer.id}:`, error);
+        }
+      }
+      setComments(allComments);
     } catch (error) {
       console.error('Failed to load answers:', error);
       setAnswers([]); // Set empty array on error
@@ -230,8 +242,11 @@ function App() {
   const handleSubmitComment = async (answerId: string, content: string) => {
     if (!currentUser) return;
 
+    console.log('Submitting comment:', { answerId, content });
+
     try {
       const newComment = await commentsAPI.create(answerId, content);
+      console.log('Comment created successfully:', newComment);
       setComments(prev => [...prev, newComment]);
       
       // Reload notifications to show the new comment notification

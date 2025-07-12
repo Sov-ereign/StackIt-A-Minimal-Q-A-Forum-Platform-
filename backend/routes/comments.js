@@ -22,6 +22,12 @@ router.get('/:answerId', async (req, res) => {
 // Post a new comment (auth required)
 router.post('/:answerId', auth, async (req, res) => {
   try {
+    console.log('Comment POST request:', { 
+      answerId: req.params.answerId, 
+      body: req.body, 
+      user: req.user 
+    });
+    
     const { content } = req.body;
     if (!content) {
       return res.status(400).json({ message: 'Content is required' });
@@ -55,16 +61,29 @@ router.post('/:answerId', auth, async (req, res) => {
     }
     
     // Check for mentions (@username)
+    // Extract plain text from HTML content for mention detection
+    const plainText = comment.content.replace(/<[^>]*>/g, ''); // Remove HTML tags
+    
     const mentionRegex = /@(\w+)/g;
-    const mentions = comment.content.match(mentionRegex);
+    const mentions = plainText.match(mentionRegex);
+    console.log('Mention detection:', { 
+      htmlContent: comment.content, 
+      plainText: plainText, 
+      mentions 
+    });
+    
     if (mentions) {
       const User = require('../models/User');
       const currentUser = await User.findById(req.user.id);
       
       for (const mention of mentions) {
         const username = mention.substring(1); // Remove @
+        console.log('Looking for user:', username);
         const mentionedUser = await User.findOne({ username });
+        console.log('Found user:', mentionedUser ? mentionedUser.username : 'not found');
+        
         if (mentionedUser && mentionedUser._id.toString() !== req.user.id) {
+          console.log('Creating mention notification for:', mentionedUser.username);
           const notification = new Notification({
             userId: mentionedUser._id,
             type: 'mention',
@@ -81,8 +100,10 @@ router.post('/:answerId', auth, async (req, res) => {
     // Populate author info for response
     await comment.populate('author', 'username reputation avatar');
     
+    console.log('Comment saved successfully:', comment);
     res.status(201).json(comment);
   } catch (err) {
+    console.error('Error creating comment:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });

@@ -134,10 +134,13 @@ export const commentsAPI = {
 
   // Create a new comment
   create: async (answerId: string, content: string) => {
-    return apiRequest(`/comments/${answerId}`, {
+    console.log('API: Creating comment:', { answerId, content });
+    const result = await apiRequest(`/comments/${answerId}`, {
       method: 'POST',
       body: JSON.stringify({ content }),
     });
+    console.log('API: Comment created:', result);
+    return result;
   },
 
   // Update a comment
