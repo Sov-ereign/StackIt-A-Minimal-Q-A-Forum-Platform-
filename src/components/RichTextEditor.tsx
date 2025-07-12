@@ -92,6 +92,102 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     updateContent();
   };
 
+  const setAlignment = (alignment: 'left' | 'center' | 'right') => {
+    if (editorRef.current) {
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        
+        // Get the current block element
+        let blockElement = range.startContainer;
+        while (blockElement && blockElement.nodeType !== Node.ELEMENT_NODE) {
+          blockElement = blockElement.parentNode;
+        }
+        
+        if (blockElement) {
+          const element = blockElement as HTMLElement;
+          
+          // Remove existing alignment classes
+          element.style.textAlign = '';
+          element.classList.remove('text-left', 'text-center', 'text-right');
+          
+          // Set new alignment
+          element.style.textAlign = alignment;
+          
+          // Also set the alignment on the element itself
+          if (element.tagName === 'DIV' || element.tagName === 'P') {
+            element.style.textAlign = alignment;
+          }
+        }
+      } else {
+        // No selection, apply to the entire content
+        const blocks = editorRef.current.querySelectorAll('p, div, h1, h2, h3, h4, h5, h6');
+        blocks.forEach(block => {
+          (block as HTMLElement).style.textAlign = alignment;
+        });
+      }
+      
+      editorRef.current.focus();
+      updateContent();
+    }
+  };
+
+  const insertUnorderedList = () => {
+    if (editorRef.current) {
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        
+        // Check if we're already in a list
+        let listItem = range.startContainer;
+        while (listItem && listItem.nodeType !== Node.ELEMENT_NODE) {
+          listItem = listItem.parentNode;
+        }
+        
+        if (listItem && (listItem as Element).tagName === 'LI') {
+          // We're in a list item, toggle the list
+          document.execCommand('outdent', false);
+        } else {
+          // We're not in a list, create one
+          document.execCommand('insertUnorderedList', false);
+        }
+      } else {
+        // No selection, just insert at cursor
+        document.execCommand('insertUnorderedList', false);
+      }
+      editorRef.current.focus();
+      updateContent();
+    }
+  };
+
+  const insertOrderedList = () => {
+    if (editorRef.current) {
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        
+        // Check if we're already in a list
+        let listItem = range.startContainer;
+        while (listItem && listItem.nodeType !== Node.ELEMENT_NODE) {
+          listItem = listItem.parentNode;
+        }
+        
+        if (listItem && (listItem as Element).tagName === 'LI') {
+          // We're in a list item, toggle the list
+          document.execCommand('outdent', false);
+        } else {
+          // We're not in a list, create one
+          document.execCommand('insertOrderedList', false);
+        }
+      } else {
+        // No selection, just insert at cursor
+        document.execCommand('insertOrderedList', false);
+      }
+      editorRef.current.focus();
+      updateContent();
+    }
+  };
+
   const updateContent = () => {
     if (editorRef.current) {
       saveCursorPosition();
@@ -213,6 +309,60 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
       setTimeout(() => saveCursorPosition(), 0);
     }
+
+    // Handle Enter key in lists
+    if (e.key === 'Enter') {
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        let listItem = range.startContainer;
+        
+        // Find the list item element
+        while (listItem && listItem.nodeType !== Node.ELEMENT_NODE) {
+          listItem = listItem.parentNode;
+        }
+        
+        if (listItem && (listItem as Element).tagName === 'LI') {
+          const listItemElement = listItem as HTMLLIElement;
+          const listContent = listItemElement.textContent || '';
+          
+          // If list item is empty, break out of list
+          if (listContent.trim() === '') {
+            e.preventDefault();
+            document.execCommand('outdent', false);
+            updateContent();
+            return;
+          }
+        }
+      }
+    }
+
+    // Handle Tab key for indentation in lists
+    if (e.key === 'Tab') {
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        let listItem = range.startContainer;
+        
+        // Find the list item element
+        while (listItem && listItem.nodeType !== Node.ELEMENT_NODE) {
+          listItem = listItem.parentNode;
+        }
+        
+        if (listItem && (listItem as Element).tagName === 'LI') {
+          e.preventDefault();
+          if (e.shiftKey) {
+            // Shift+Tab: outdent
+            document.execCommand('outdent', false);
+          } else {
+            // Tab: indent
+            document.execCommand('indent', false);
+          }
+          updateContent();
+          return;
+        }
+      }
+    }
   };
 
   const handleClick = () => {
@@ -270,7 +420,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
         <button
           type="button"
-          onClick={() => execCommand('insertUnorderedList')}
+          onClick={insertUnorderedList}
           className="p-2 hover:bg-gray-200 rounded transition-colors"
           title="Bullet List"
         >
@@ -279,7 +429,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         
         <button
           type="button"
-          onClick={() => execCommand('insertOrderedList')}
+          onClick={insertOrderedList}
           className="p-2 hover:bg-gray-200 rounded transition-colors"
           title="Numbered List"
         >
@@ -290,7 +440,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
         <button
           type="button"
-          onClick={() => execCommand('justifyLeft')}
+          onClick={() => setAlignment('left')}
           className="p-2 hover:bg-gray-200 rounded transition-colors"
           title="Align Left"
         >
@@ -299,7 +449,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         
         <button
           type="button"
-          onClick={() => execCommand('justifyCenter')}
+          onClick={() => setAlignment('center')}
           className="p-2 hover:bg-gray-200 rounded transition-colors"
           title="Align Center"
         >
@@ -308,7 +458,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         
         <button
           type="button"
-          onClick={() => execCommand('justifyRight')}
+          onClick={() => setAlignment('right')}
           className="p-2 hover:bg-gray-200 rounded transition-colors"
           title="Align Right"
         >
@@ -463,6 +613,40 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         [contenteditable] * {
           direction: ltr !important;
           text-align: left !important;
+        }
+
+        /* List styling */
+        [contenteditable] ul {
+          list-style-type: disc;
+          margin: 0.5em 0;
+          padding-left: 2em;
+        }
+
+        [contenteditable] ol {
+          list-style-type: decimal;
+          margin: 0.5em 0;
+          padding-left: 2em;
+        }
+
+        [contenteditable] li {
+          margin: 0.25em 0;
+          line-height: 1.5;
+        }
+
+        [contenteditable] ul ul {
+          list-style-type: circle;
+        }
+
+        [contenteditable] ul ul ul {
+          list-style-type: square;
+        }
+
+        [contenteditable] ol ol {
+          list-style-type: lower-alpha;
+        }
+
+        [contenteditable] ol ol ol {
+          list-style-type: lower-roman;
         }
       `}</style>
     </div>

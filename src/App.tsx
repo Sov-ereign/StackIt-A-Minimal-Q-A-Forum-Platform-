@@ -24,10 +24,22 @@ function App() {
   const [notifications, setNotifications] = useState(initialNotifications);
   const [loading, setLoading] = useState(true);
 
-  // Load questions on component mount
+  // Load questions and check for existing user session on component mount
   useEffect(() => {
     loadQuestions();
+    checkExistingUser();
   }, []);
+
+  const checkExistingUser = async () => {
+    try {
+      const user = await authAPI.getCurrentUser();
+      if (user) {
+        setCurrentUser(user);
+      }
+    } catch (error) {
+      console.error('Failed to get current user:', error);
+    }
+  };
 
   const loadQuestions = async () => {
     try {
@@ -67,6 +79,8 @@ function App() {
   };
 
   const handleQuestionClick = async (questionId: string) => {
+    if (!questionId) return; // Don't proceed if questionId is invalid
+    
     setSelectedQuestionId(questionId);
     setCurrentView('detail');
     await loadAnswers(questionId);
@@ -87,9 +101,12 @@ function App() {
     }
   };
 
-  const handleAcceptAnswer = (answerId: string) => {
+  const handleAcceptAnswer = async (answerId: string) => {
     if (!currentUser || !selectedQuestionId) return;
 
+    try {
+      // This would need to be implemented in the backend
+      // For now, we'll just update the local state
     const question = questions.find(q => q.id === selectedQuestionId);
     if (question?.authorId !== currentUser.id) return;
 
@@ -108,14 +125,20 @@ function App() {
           : q
       )
     );
+    } catch (error) {
+      console.error('Failed to accept answer:', error);
+    }
   };
 
   const loadAnswers = async (questionId: string) => {
+    if (!questionId) return; // Don't load if questionId is undefined
+    
     try {
       const answersData = await answersAPI.getByQuestion(questionId);
       setAnswers(answersData);
     } catch (error) {
       console.error('Failed to load answers:', error);
+      setAnswers([]); // Set empty array on error
     }
   };
 
@@ -187,7 +210,7 @@ function App() {
     };
 
     setComments(prev => [...prev, newComment]);
-
+    
     // Create notification for answer author
     const answer = answers.find(a => a.id === answerId);
     if (answer && answer.authorId !== currentUser.id) {
@@ -245,7 +268,7 @@ function App() {
         />
       )}
 
-      {currentView === 'detail' && selectedQuestion && (
+      {currentView === 'detail' && selectedQuestion && selectedQuestionId && (
         <QuestionDetail
           question={selectedQuestion}
           answers={questionAnswers}
@@ -260,6 +283,14 @@ function App() {
           onSubmitComment={handleSubmitComment}
           onBack={() => setCurrentView('list')}
         />
+      )}
+
+      {currentView === 'detail' && !selectedQuestion && (
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">Loading question...</p>
+          </div>
+        </div>
       )}
 
       {currentView === 'ask' && (

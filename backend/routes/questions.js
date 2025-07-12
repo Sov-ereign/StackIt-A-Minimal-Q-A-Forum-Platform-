@@ -8,7 +8,21 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const questions = await Question.find().populate('author', 'username reputation avatar');
-    res.json(questions);
+    
+    // Transform MongoDB _id to id for frontend compatibility
+    const transformedQuestions = questions.map(question => {
+      const questionObj = question.toObject();
+      return {
+        ...questionObj,
+        id: questionObj._id,
+        author: questionObj.author ? {
+          ...questionObj.author,
+          id: questionObj.author._id
+        } : null
+      };
+    });
+    
+    res.json(transformedQuestions);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -28,7 +42,19 @@ router.post('/', auth, async (req, res) => {
       author: req.user.id,
     });
     await question.save();
-    res.status(201).json(question);
+    
+    // Transform the response to include id field
+    const questionObj = question.toObject();
+    const transformedQuestion = {
+      ...questionObj,
+      id: questionObj._id,
+      author: {
+        ...questionObj.author,
+        id: questionObj.author._id
+      }
+    };
+    
+    res.status(201).json(transformedQuestion);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }

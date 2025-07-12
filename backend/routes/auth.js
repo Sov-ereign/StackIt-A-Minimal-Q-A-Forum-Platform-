@@ -1,6 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const auth = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -18,7 +19,15 @@ router.post('/register', async (req, res) => {
     const user = new User({ username, email, password });
     await user.save();
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.status(201).json({ token, user: { id: user._id, username: user.username, email: user.email, role: user.role, avatar: user.avatar, reputation: user.reputation } });
+    
+    // Transform user data to include id field
+    const userObj = user.toObject();
+    const transformedUser = {
+      ...userObj,
+      id: userObj._id
+    };
+    
+    res.status(201).json({ token, user: transformedUser });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -40,7 +49,36 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.json({ token, user: { id: user._id, username: user.username, email: user.email, role: user.role, avatar: user.avatar, reputation: user.reputation } });
+    
+    // Transform user data to include id field
+    const userObj = user.toObject();
+    const transformedUser = {
+      ...userObj,
+      id: userObj._id
+    };
+    
+    res.json({ token, user: transformedUser });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get current user (auth required)
+router.get('/me', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Transform user data to include id field
+    const userObj = user.toObject();
+    const transformedUser = {
+      ...userObj,
+      id: userObj._id
+    };
+    
+    res.json(transformedUser);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }

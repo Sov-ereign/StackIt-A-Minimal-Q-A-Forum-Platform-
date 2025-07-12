@@ -14,6 +14,9 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/questions', require('./routes/questions'));
 app.use('/api/answers', require('./routes/answers'));
 app.use('/api/votes', require('./routes/votes'));
+app.use('/api/comments', require('./routes/comments'));
+app.use('/api/admin', require('./routes/admin'));
+app.use('/api/reports', require('./routes/reports'));
 
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://localhost:27017/qa_app';

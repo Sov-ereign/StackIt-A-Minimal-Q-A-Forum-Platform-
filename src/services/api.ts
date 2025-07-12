@@ -58,9 +58,18 @@ export const authAPI = {
     removeAuthToken();
   },
 
-  getCurrentUser: () => {
+  getCurrentUser: async () => {
     const token = getAuthToken();
-    return token ? { token } : null;
+    if (!token) return null;
+    
+    try {
+      const response = await apiRequest('/auth/me');
+      return response;
+    } catch (error) {
+      // Token is invalid, remove it
+      removeAuthToken();
+      return null;
+    }
   },
 };
 
